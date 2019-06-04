@@ -105,6 +105,22 @@ def searchQuestion(question = 0):
     except mysql.connector.Error as error:
         print("Failed to get record from database: {}".format(error))
 
+def searchComment(question):
+    try:
+        cursor.execute("SELECT * FROM Comments WHERE Text LIKE %s ORDER BY Score DESC",("%" + question + "%",))
+        result = cursor.fetchall()
+        if result == []:
+            print("No results found.. \n\n")
+        else:
+            for row in result:
+                print("Score: {}".format(row[2]))
+                print(row[3])
+                print("------------")
+
+    except mysql.connector.Error as error:
+        print("Failed to get record from database: {}".format(error))
+
+
 
 def choose(argument):
     print("Please enter the request..")
@@ -114,6 +130,8 @@ def choose(argument):
         searchQuestion(question)
     elif argument == '2': 
         searchAnswers(0,question)
+    elif argument == '3':
+        searchComment(question)
 
 def main():
     while True:
