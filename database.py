@@ -4,6 +4,7 @@ import simplejson as json
 import sys
 import webbrowser, os
 import time
+from pprint import pprint
 
 # Connect to database
 mydb = mysql.connector.connect(
@@ -66,7 +67,6 @@ def searchQuestion(question = 0):
         collection = {}
         result = cursor.fetchall()
         for row in result:
-            result = cursor.fetchall
             print("Id =", row[0])
             #print("PostTypeId =", row[1])
             #print("Accepted Answer ID = ", row[2])
@@ -94,7 +94,8 @@ def searchQuestion(question = 0):
             print("Insert ID for more information...")
             id = sys.stdin.readline().strip('\n')
             searchPostLink(id)
-            extractSnippet(collection[id].get("body"))
+            #extractSnippet(collection[id]["body"])
+            pprint(scraper(collection[id]["body"]))
             searchAnswers(id)
 
         
@@ -124,7 +125,17 @@ def main():
         print("Press [4] to search code snap")
         x = sys.stdin.readline().strip('\n')
         choose(x)
-    
+ 
+
+def scraper(body):
+    link = list(map(lambda x: (x.split("\""))[0], body.split("href=\"")))[1:]
+    code = list(filter(lambda x: is_code(x), list(map(lambda x: (x.split("</code>"))[0], body.split("<code>")))[1:]))
+    gh_link = list(filter(lambda x: "github.com/" in x, link))
+    link = list(filter(lambda x: x not in gh_link, link))
+    return {"docs":link, "gh_repos":gh_link, "snippets":code}
+
+def is_code(code):
+    return True if len(code.split()) > 1 and len(list(filter(lambda x: x not in code, [".",";","=","!","+","-","*",":","\"","\'","&","|","%"]))) > 0 else False
 
 if __name__ == "__main__":
     main()
