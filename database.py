@@ -49,7 +49,8 @@ def searchAnswers(id = 0,question = 0):
             cursor.execute("SELECT * FROM PostOriginale WHERE PostTypeId = 2 AND ParentId = %s ORDER BY Score DESC",(id,))
             result = cursor.fetchall()
             for row in result:
-                print(row[8])
+                #print(row[8])
+                pprint(scraper(row[8]))
                 print("-----------")
 
     except mysql.connector.Error as error:
@@ -95,7 +96,7 @@ def searchQuestion(question = 0):
             id = sys.stdin.readline().strip('\n')
             searchPostLink(id)
             #extractSnippet(collection[id]["body"])
-            pprint(scraper(collection[id]["body"]))
+            #pprint(scraper(collection[id]["body"]))
             searchAnswers(id)
 
         
@@ -146,10 +147,10 @@ def main():
  
 
 def scraper(body):
-    link = list(map(lambda x: (x.split("\""))[0], body.split("href=\"")))[1:]
-    code = list(filter(lambda x: is_code(x), list(map(lambda x: (x.split("</code>"))[0], body.split("<code>")))[1:]))
-    gh_link = list(filter(lambda x: "github.com/" in x, link))
-    link = list(filter(lambda x: x not in gh_link, link))
+    link = list(set(list(map(lambda x: (x.split("\""))[0], body.split("href=\"")))[1:]))
+    code = list(set(list(filter(lambda x: is_code(x), list(map(lambda x: (x.split("</code>"))[0], body.split("<code>")))[1:]))))
+    gh_link = list(set(list(filter(lambda x: "github.com/" in x, link))))
+    link = (list(filter(lambda x: x not in gh_link, link)))
     return {"docs":link, "gh_repos":gh_link, "snippets":code}
 
 def is_code(code):
