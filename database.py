@@ -39,19 +39,25 @@ def openBrowser():
 
 def searchAnswers(id = 0,question = 0):
     try:
+        answers = {}
+        print("searching answers .. \n")
         if id == 0:
             cursor.execute("SELECT * FROM PostOriginale WHERE PostTypeId = 2 AND Body LIKE %s ORDER BY Score DESC",("%" + question + "%",))
             result = cursor.fetchall()
             for row in result:
-                print(row[8])
+                print(row[8],"\n")
+                print("RILEVANT INFORMATION")
+                pprint(scraper(row[8]))
                 print("-----------")
         else:
             cursor.execute("SELECT * FROM PostOriginale WHERE PostTypeId = 2 AND ParentId = %s ORDER BY Score DESC",(id,))
             result = cursor.fetchall()
             for row in result:
-                #print(row[8])
-                pprint(scraper(row[8]))
-                print("-----------")
+                #Inserire nel dizionario i risultati ottenuti dalla funzione scraper "code": codice, "Reference Docs": link, "Reference GH": link
+                answers[str(row[0])] = {
+                    "body": row[8]
+                }
+            return answers
 
     except mysql.connector.Error as error:
         print("Failed to get record from database: {}".format(error))
@@ -61,6 +67,9 @@ def searchPostLink(id):
     cursor.execute(" SELECT * FROM PostLink WHERE RelatedPostId = (%s) ",(id,))
     result = cursor.fetchall()
     print("Questo post viene richiamato {} volte in altre discussioni!\n".format(len(result)))
+    #print(result)  Inserire anche quali sono gli Id dei post che fanno riferimento a questa domanda disponibili in result
+
+
 
 def searchQuestion(question = 0):
     try:
@@ -95,28 +104,37 @@ def searchQuestion(question = 0):
             print("Insert ID for more information...")
             id = sys.stdin.readline().strip('\n')
             searchPostLink(id)
+            collection[str(id)]["comments"] = searchComment(id)
+            pprint(collection[id]["comments"])
             #extractSnippet(collection[id]["body"])
             #pprint(scraper(collection[id]["body"]))
-            searchAnswers(id)
-
-        
-
-       
+            collection[str(id)]["answers"] = searchAnswers(id)
+            pprint(collection[id])
 
     except mysql.connector.Error as error:
         print("Failed to get record from database: {}".format(error))
 
-def searchComment(question):
+def searchComment(question = 0, id = 0):
     try:
-        cursor.execute("SELECT * FROM Comments WHERE Text LIKE %s ORDER BY Score DESC",("%" + question + "%",))
+        print("searching comments .. \n")
+
+        if id == 0:
+            cursor.execute("SELECT * FROM Comments WHERE Text LIKE %s ORDER BY Score DESC",("%" + question + "%",))
+        else:
+            cursor.execute("SELECT * FROM Comments WHERE PostId = %s ORDER BY Score DESC",(id))
+
         result = cursor.fetchall()
         if result == []:
-            print("No results found.. \n\n")
+            print("No comments found.. \n\n")
         else:
+            comments = {}
             for row in result:
-                print("Score: {}".format(row[2]))
-                print(row[3])
-                print("------------")
+                comments[str(row[0])] = {
+                    "postId": row[1],
+                    "score": row[2],
+                    "text": row[3]
+                }
+            return comments
 
     except mysql.connector.Error as error:
         print("Failed to get record from database: {}".format(error))
@@ -132,7 +150,7 @@ def choose(argument):
     elif argument == '2': 
         searchAnswers(0,question)
     elif argument == '3':
-        searchComment(question)
+        searchComment(question,0)
 
 def main():
     while True:
