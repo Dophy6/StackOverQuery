@@ -29,7 +29,7 @@ def rev_fetch_all(cursor,arraysize,table=None):
         container += temp
         
     if table == "Post":
-        container = list(map(lambda x: {"Id":x[0],"PostTypeId":x[1],"AcceptedAnswerId":x[2],"ParentId":x[3],"CreationDate":datetime_parser(x[4]),"DeletionDate":datetime_parser(x[5]),"Score":x[6],"ViewCount":x[7],"Body":x[8],"OwnerUserId":x[9],"OwnerDisplayName":x[10],"LastEditorUserId":x[11],"LastEditorDisplayName":x[12],"LastEditDate":datetime_parser(x[13]),"LastActivityDate":datetime_parser(x[14]),"Title":x[15],"Tags":x[16],"AnswerCount":x[17],"CommentCount":x[18],"FavoriteCount":x[19],"ClosedDate":datetime_parser(x[20]),"CommunityOwnedDate":x[21]}, container))
+        container = list(map(lambda x: {"Id":x[0],"PostTypeId":x[1],"AcceptedAnswerId":x[2],"ParentId":x[3],"CreationDate":datetime_parser(x[4]),"DeletionDate":datetime_parser(x[5]),"Score":x[6],"ViewCount":x[7],"Body":x[8],"OwnerUserId":x[9],"OwnerDisplayName":x[10],"LastEditorUserId":x[11],"LastEditorDisplayName":x[12],"LastEditDate":datetime_parser(x[13]),"LastActivityDate":datetime_parser(x[14]),"Title":x[15],"Tags":x[16],"AnswerCount":x[17],"CommentCount":x[18],"FavoriteCount":x[19],"ClosedDate":datetime_parser(x[20]),"CommunityOwnedDate":datetime_parser(x[21])}, container))
     elif table == "Comments":
         container = list(map(lambda x: {"Id":x[0],"PostId":x[1],"Score":x[2],"Text":x[3],"CreationDate":datetime_parser(x[4]),"UserDisplayName":x[5],"UserId":x[6]}, container))
     elif table == "PostLinks":
