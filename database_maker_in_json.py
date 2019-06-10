@@ -1,7 +1,7 @@
 import mysql.connector, json, datetime, sys
 
-START_DATE = "'2014-01-01 00:00:00'"
-END_DATE = "'2015-01-01 00:00:00'"
+START_DATE = datetime.datetime(2014,1,1)
+END_DATE = datetime.datetime(2015,1,1)
 #YYYY-MM-DD HH:MM:SS datetime mysql format
 
 # Connect to database
@@ -17,6 +17,9 @@ mydb = mysql.connector.connect(
 
 cursor = mydb.cursor()
 
+def datetime_parser(mydatetime, mysql=False):
+    return mydatetime.strftime("'%Y-%m-%d %H:%M:%S'") if mysql else mydatetime.strftime("%Y-%m-%d %H:%M:%S")
+
 def rev_fetch_all(cursor,arraysize,table=None):
     container = []
     while True:
@@ -26,27 +29,28 @@ def rev_fetch_all(cursor,arraysize,table=None):
         container += temp
         
     if table == "Post":
-        container = list(map(lambda x: {"Id":x[0],"PostTypeId":x[1],"AcceptedAnswerId":x[2],"ParentId":x[3],"CreationDate":x[4],"DeletionDate":x[5],"Score":x[6],"ViewCount":x[7],"Body":x[8],"OwnerUserId":x[9],"OwnerDisplayName":x[10],"LastEditorUserId":x[11],"LastEditorDisplayName":x[12],"LastEditDate":x[13],"LastActivityDate":x[14],"Title":x[15],"Tags":x[16],"AnswerCount":x[17],"CommentCount":x[18],"FavoriteCount":x[19],"ClosedDate":x[20],"CommunityOwnedDate":x[21]}, container))
+        container = list(map(lambda x: {"Id":x[0],"PostTypeId":x[1],"AcceptedAnswerId":x[2],"ParentId":x[3],"CreationDate":datetime_parser(x[4]),"DeletionDate":datetime_parser(x[5]),"Score":x[6],"ViewCount":x[7],"Body":x[8],"OwnerUserId":x[9],"OwnerDisplayName":x[10],"LastEditorUserId":x[11],"LastEditorDisplayName":x[12],"LastEditDate":datetime_parser(x[13]),"LastActivityDate":datetime_parser(x[14]),"Title":x[15],"Tags":x[16],"AnswerCount":x[17],"CommentCount":x[18],"FavoriteCount":x[19],"ClosedDate":datetime_parser(x[20]),"CommunityOwnedDate":x[21]}, container))
     elif table == "Comments":
-        container = list(map(lambda x: {"Id":x[0],"PostId":x[1],"Score":x[2],"Text":x[3],"CreationDate":x[4],"UserDisplayName":x[5],"UserId":x[6]}, container))
+        container = list(map(lambda x: {"Id":x[0],"PostId":x[1],"Score":x[2],"Text":x[3],"CreationDate":datetime_parser(x[4]),"UserDisplayName":x[5],"UserId":x[6]}, container))
     elif table == "PostLinks":
-        container = list(map(lambda x: {"Id":x[0],"CreationDate":x[1],"PostId":x[2],"RelatedPostId":x[3],"LinkTypeId":x[4]}, container))
+        container = list(map(lambda x: {"Id":x[0],"CreationDate":datetime_parser(x[1]),"PostId":x[2],"RelatedPostId":x[3],"LinkTypeId":x[4]}, container))
     elif table == "PostReferenceGH":
         container = list(map(lambda x: {"Id":x[0],"FileId":x[1],"Repo":x[2],"RepoOwner":x[3],"RepoName":x[4],"Branch":x[5],"Path":x[6],"FileExt":x[7],"Size":x[8],"Copies":x[9],"PostId":x[10],"PostTypeId":x[11],"CommentId":x[12],"SOUrl":x[13],"GHUrl":x[14]}, container))
 
     return container
 
 
-print("Start collecting question from {} to {}\n\n".format(START_DATE[1:-9],END_DATE[1:-9]))
+
+print("Start collecting question from {} to {}\n\n".format(datetime_parser(START_DATE)[1:-9],datetime_parser(END_DATE)[1:-9]))
 start = datetime.datetime.now()
 timer = datetime.datetime.now()
 
-cursor.execute("SELECT * FROM Post WHERE PostTypeId = 1 AND CreationDate BETWEEN {} AND {} LIMIT 10".format(START_DATE,END_DATE))
+cursor.execute("SELECT * FROM PostOriginale WHERE PostTypeId = 1 AND CreationDate BETWEEN {} AND {}".format(datetime_parser(START_DATE,True),datetime_parser(END_DATE,True)))
 
 print("Querying for question ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
 timer = datetime.datetime.now()
 
-questions = rev_fetch_all(cursor=cursor,arraysize=1000,table="Post")
+questions = rev_fetch_all(cursor=cursor,arraysize=4000,table="Post")
 
 print("Fetching for question ended in {} seconds.\nFounded {} records.\nStarting preparing question ID list...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(questions)))
 timer = datetime.datetime.now()
@@ -57,13 +61,13 @@ print("Size of question ID list is {} MB\n\n".format(sys.getsizeof(questionIDs)/
 
 print("Questions ID list made in {} seconds.\nStarting querying for answers of each question ID...(please, be patients)\n\n".format((datetime.datetime.now() - timer).total_seconds()))
 timer = datetime.datetime.now()
-#print("SELECT * FROM Post WHERE PostTypeId = 2 AND ParentId IN ({})".format(questionIDs))
-cursor.execute("SELECT * FROM Post WHERE PostTypeId = 2 AND ParentId IN ({})".format(questionIDs))
+
+cursor.execute("SELECT * FROM PostOriginale WHERE PostTypeId = 2 AND ParentId IN ({})".format(questionIDs))
 
 print("Querying for answers ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
 timer = datetime.datetime.now()
 
-answers = rev_fetch_all(cursor=cursor,arraysize=2000,table="Post")
+answers = rev_fetch_all(cursor=cursor,arraysize=4000,table="Post")
 
 print("Fetching for answers ended in {} seconds.\nFounded {} records.\nStarting exporting posts to JSON file \"Post.json\" and preparing answers ID list...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(answers)))
 timer = datetime.datetime.now()
@@ -88,7 +92,7 @@ cursor.execute("SELECT * FROM Comments WHERE PostId IN ({})".format(postIDs))
 print("Querying for comments ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
 timer = datetime.datetime.now()
 
-comments = rev_fetch_all(cursor=cursor,arraysize=2000,table="Comments")
+comments = rev_fetch_all(cursor=cursor,arraysize=4000,table="Comments")
 
 print("Fetching for comments ended in {} seconds.\nFounded {} records.\nStarting exporting to JSON file \"Comments.json\"...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(comments)))
 timer = datetime.datetime.now()
@@ -106,7 +110,7 @@ cursor.execute("SELECT * FROM PostLinks WHERE PostId IN ({})".format(postIDs))
 print("Querying for post links ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
 timer = datetime.datetime.now()
 
-post_links = rev_fetch_all(cursor=cursor,arraysize=1000,table="PostLinks")
+post_links = rev_fetch_all(cursor=cursor,arraysize=4000,table="PostLinks")
 
 print("Fetching for post links ended in {} seconds.\nFounded {} records.\nStarting exporting to JSON file \"PostLinks.json\"...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(post_links)))
 timer = datetime.datetime.now()
@@ -124,7 +128,7 @@ cursor.execute("SELECT * FROM PostReferenceGH WHERE PostId IN ({})".format(postI
 print("Querying for post reference GitHub ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
 timer = datetime.datetime.now()
 
-post_GH = rev_fetch_all(cursor=cursor,arraysize=1000,table="PostReferenceGH")
+post_GH = rev_fetch_all(cursor=cursor,arraysize=4000,table="PostReferenceGH")
 
 print("Fetching for post reference GitHub ended in {} seconds.\nFounded {} records.\nStarting exporting to JSON file \"PostReferenceGH.json\"...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(post_GH)))
 timer = datetime.datetime.now()
