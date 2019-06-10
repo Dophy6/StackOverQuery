@@ -1,7 +1,8 @@
-import mysql.connector, json, datetime
+import mysql.connector, json, datetime, sys
 
-START_DATE = datetime.datetime(2014,1,1)
-END_DATE = datetime.datetime(2015,1,1)
+START_DATE = "'2014-01-01 00:00:00'"
+END_DATE = "'2015-01-01 00:00:00'"
+#YYYY-MM-DD HH:MM:SS datetime mysql format
 
 # Connect to database
 mydb = mysql.connector.connect(
@@ -11,104 +12,10 @@ mydb = mysql.connector.connect(
     #database = "FilteredData"
     database = "SistemiDistribuiti"
 )
+
+#Aumented max_allowed_packet from 16M to 32M in order to made query with big strings
+
 cursor = mydb.cursor()
-
-
-print("Start collecting question from {} to {}\n\n".format(START_DATE.strftime("%d/%m/%Y"),END_DATE.strftime("%d/%m/%Y")))
-start = datetime.datetime.now()
-timer = datetime.datetime.now()
-
-cursor.execute("SELECT * FROM Post WHERE PostTypeId = 1 AND CreationDate BETWEEN START_DATE AND END_DATE")
-
-print("Querying for question ended in {} seconds, waiting for fetch...\n\n".format((timer - datetime.datetime.now()).total_seconds()))
-timer = datetime.datetime.now()
-
-questions = rev_fetch_all(cursor=cursor,arraysize=1000,table="Post")
-
-print("Fetching for question ended in {} seconds.\nFounded {} records.\nStarting preparing question ID list...\n\n".format((timer - datetime.datetime.now()).total_seconds(),len(questions)))
-timer = datetime.datetime.now()
-
-questionIDs = (str(list(map(lambda x: x["Id"],questions))))[1:-1]
-
-print("Questions ID list made in {} seconds.\nStarting querying for answers of each question ID...(please, be patients)\n\n".format((timer - datetime.datetime.now()).total_seconds()))
-timer = datetime.datetime.now()
-
-cursor.execute("SELECT * FROM Post WHERE PostTypeId = 2 AND ParentId IN ({})".format(questionIDs))
-
-print("Querying for answers ended in {} seconds, waiting for fetch...\n\n".format((timer - datetime.datetime.now()).total_seconds()))
-timer = datetime.datetime.now()
-
-answers = rev_fetch_all(cursor=cursor,arraysize=2000,table="Post")
-
-print("Fetching for answers ended in {} seconds.\nFounded {} records.\nStarting exporting posts to JSON file \"Post.json\" and preparing answers ID list...\n\n".format((timer - datetime.datetime.now()).total_seconds(),len(answers)))
-timer = datetime.datetime.now()
-
-postIDs = questionIDs + ", " + (str(list(map(lambda x: x["Id"],answers))))[1:-1]
-questions += answers
-answers = None
-del answers
-questionIDs = None
-del questionIDs
-with open("Post.json","a") as f:
-    json.dump(questions,f)
-questions = None
-del questions
-
-print("JSON export and Answers ID list made in {} seconds.\nStarting querying for comments of each post ID...(please, be patients)\n\n".format((timer - datetime.datetime.now()).total_seconds()))
-timer = datetime.datetime.now()
-
-cursor.execute("SELECT * FROM Comments WHERE PostId IN ({})".format(postIDs))
-
-print("Querying for comments ended in {} seconds, waiting for fetch...\n\n".format((timer - datetime.datetime.now()).total_seconds()))
-timer = datetime.datetime.now()
-
-comments = rev_fetch_all(cursor=cursor,arraysize=2000,table="Comments")
-
-print("Fetching for comments ended in {} seconds.\nFounded {} records.\nStarting exporting to JSON file \"Comments.json\"...\n\n".format((timer - datetime.datetime.now()).total_seconds(),len(comments)))
-timer = datetime.datetime.now()
-
-with open("Comments.json","a") as f:
-    json.dump(comments,f)
-comments = None
-del comments
-
-print("JSON export made in {} seconds.\nStarting querying for post links of each post ID...(please, be patients)\n\n".format((timer - datetime.datetime.now()).total_seconds()))
-timer = datetime.datetime.now()
-
-cursor.execute("SELECT * FROM PostLinks WHERE PostId IN ({})".format(postIDs))
-
-print("Querying for post links ended in {} seconds, waiting for fetch...\n\n".format((timer - datetime.datetime.now()).total_seconds()))
-timer = datetime.datetime.now()
-
-post_links = rev_fetch_all(cursor=cursor,arraysize=1000,table="PostLinks")
-
-print("Fetching for post links ended in {} seconds.\nFounded {} records.\nStarting exporting to JSON file \"PostLinks.json\"...\n\n".format((timer - datetime.datetime.now()).total_seconds(),len(post_links)))
-timer = datetime.datetime.now()
-
-with open("PostLinks.json","a") as f:
-    json.dump(post_links,f)
-post_links = None
-del post_links
-
-print("JSON export made in {} seconds.\nStarting querying for post reference GitHub of each post ID...(please, be patients)\n\n".format((timer - datetime.datetime.now()).total_seconds()))
-timer = datetime.datetime.now()
-
-cursor.execute("SELECT * FROM PostReferenceGH WHERE PostId IN ({})".format(postIDs))
-
-print("Querying for post reference GitHub ended in {} seconds, waiting for fetch...\n\n".format((timer - datetime.datetime.now()).total_seconds()))
-timer = datetime.datetime.now()
-
-post_GH = rev_fetch_all(cursor=cursor,arraysize=1000,table="PostReferenceGH")
-
-print("Fetching for post reference GitHub ended in {} seconds.\nFounded {} records.\nStarting exporting to JSON file \"PostReferenceGH.json\"...\n\n".format((timer - datetime.datetime.now()).total_seconds(),len(post_GH)))
-timer = datetime.datetime.now()
-
-with open("PostReferenceGH.json","a") as f:
-    json.dump(post_GH,f)
-post_GH = None
-del post_GH
-
-print("JSON export made in {} seconds.\n\n\nWork completed in {} minutes, well done!".format((timer - datetime.datetime.now()).total_seconds(),(start - datetime.datetime.now()).total_seconds()/60))
 
 def rev_fetch_all(cursor,arraysize,table=None):
     container = []
@@ -130,3 +37,101 @@ def rev_fetch_all(cursor,arraysize,table=None):
     return container
 
 
+print("Start collecting question from {} to {}\n\n".format(START_DATE[1:-9],END_DATE[1:-9]))
+start = datetime.datetime.now()
+timer = datetime.datetime.now()
+
+cursor.execute("SELECT * FROM Post WHERE PostTypeId = 1 AND CreationDate BETWEEN {} AND {} LIMIT 10".format(START_DATE,END_DATE))
+
+print("Querying for question ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
+timer = datetime.datetime.now()
+
+questions = rev_fetch_all(cursor=cursor,arraysize=1000,table="Post")
+
+print("Fetching for question ended in {} seconds.\nFounded {} records.\nStarting preparing question ID list...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(questions)))
+timer = datetime.datetime.now()
+
+questionIDs = (str(list(map(lambda x: x["Id"] ,questions))))[1:-1]
+print(questionIDs)
+print("Size of question ID list is {} MB\n\n".format(sys.getsizeof(questionIDs)/(1024*1024)))
+
+print("Questions ID list made in {} seconds.\nStarting querying for answers of each question ID...(please, be patients)\n\n".format((datetime.datetime.now() - timer).total_seconds()))
+timer = datetime.datetime.now()
+#print("SELECT * FROM Post WHERE PostTypeId = 2 AND ParentId IN ({})".format(questionIDs))
+cursor.execute("SELECT * FROM Post WHERE PostTypeId = 2 AND ParentId IN ({})".format(questionIDs))
+
+print("Querying for answers ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
+timer = datetime.datetime.now()
+
+answers = rev_fetch_all(cursor=cursor,arraysize=2000,table="Post")
+
+print("Fetching for answers ended in {} seconds.\nFounded {} records.\nStarting exporting posts to JSON file \"Post.json\" and preparing answers ID list...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(answers)))
+timer = datetime.datetime.now()
+
+postIDs = questionIDs + ", " + (str(list(map(lambda x: str(x["Id"]) ,answers))))[1:-1]
+print("Size of post ID list is {} MB\n\n".format(sys.getsizeof(postIDs)/(1024*1024)))
+questions += answers
+answers = None
+del answers
+questionIDs = None
+del questionIDs
+with open("Post.json","a") as f:
+    json.dump(questions,f)
+questions = None
+del questions
+
+print("JSON export and Answers ID list made in {} seconds.\nStarting querying for comments of each post ID...(please, be patients)\n\n".format((datetime.datetime.now() - timer).total_seconds()))
+timer = datetime.datetime.now()
+
+cursor.execute("SELECT * FROM Comments WHERE PostId IN ({})".format(postIDs))
+
+print("Querying for comments ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
+timer = datetime.datetime.now()
+
+comments = rev_fetch_all(cursor=cursor,arraysize=2000,table="Comments")
+
+print("Fetching for comments ended in {} seconds.\nFounded {} records.\nStarting exporting to JSON file \"Comments.json\"...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(comments)))
+timer = datetime.datetime.now()
+
+with open("Comments.json","a") as f:
+    json.dump(comments,f)
+comments = None
+del comments
+
+print("JSON export made in {} seconds.\nStarting querying for post links of each post ID...(please, be patients)\n\n".format((datetime.datetime.now() - timer).total_seconds()))
+timer = datetime.datetime.now()
+
+cursor.execute("SELECT * FROM PostLinks WHERE PostId IN ({})".format(postIDs))
+
+print("Querying for post links ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
+timer = datetime.datetime.now()
+
+post_links = rev_fetch_all(cursor=cursor,arraysize=1000,table="PostLinks")
+
+print("Fetching for post links ended in {} seconds.\nFounded {} records.\nStarting exporting to JSON file \"PostLinks.json\"...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(post_links)))
+timer = datetime.datetime.now()
+
+with open("PostLinks.json","a") as f:
+    json.dump(post_links,f)
+post_links = None
+del post_links
+
+print("JSON export made in {} seconds.\nStarting querying for post reference GitHub of each post ID...(please, be patients)\n\n".format((datetime.datetime.now() - timer).total_seconds()))
+timer = datetime.datetime.now()
+
+cursor.execute("SELECT * FROM PostReferenceGH WHERE PostId IN ({})".format(postIDs))
+
+print("Querying for post reference GitHub ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
+timer = datetime.datetime.now()
+
+post_GH = rev_fetch_all(cursor=cursor,arraysize=1000,table="PostReferenceGH")
+
+print("Fetching for post reference GitHub ended in {} seconds.\nFounded {} records.\nStarting exporting to JSON file \"PostReferenceGH.json\"...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(post_GH)))
+timer = datetime.datetime.now()
+
+with open("PostReferenceGH.json","a") as f:
+    json.dump(post_GH,f)
+post_GH = None
+del post_GH
+
+print("JSON export made in {} seconds.\n\n\nWork completed in {} minutes, well done!".format((datetime.datetime.now() - timer).total_seconds(),(datetime.datetime.now() - start).total_seconds()/60))
