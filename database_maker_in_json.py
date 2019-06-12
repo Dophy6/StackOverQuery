@@ -18,6 +18,7 @@ mydb = mysql.connector.connect(
 cursor = mydb.cursor()
 
 def datetime_parser(mydatetime, mysql=False):
+    if mydatetime == None: return mydatetime
     return mydatetime.strftime("'%Y-%m-%d %H:%M:%S'") if mysql else mydatetime.strftime("%Y-%m-%d %H:%M:%S")
 
 def rev_fetch_all(cursor,arraysize,table=None):
@@ -45,12 +46,12 @@ print("Start collecting question from {} to {}\n\n".format(datetime_parser(START
 start = datetime.datetime.now()
 timer = datetime.datetime.now()
 
-cursor.execute("SELECT * FROM PostOriginale WHERE PostTypeId = 1 AND CreationDate BETWEEN {} AND {}".format(datetime_parser(START_DATE,True),datetime_parser(END_DATE,True)))
+cursor.execute("SELECT * FROM Post WHERE PostTypeId = 1 AND CreationDate BETWEEN {} AND {}".format(datetime_parser(START_DATE,True),datetime_parser(END_DATE,True)))
 
 print("Querying for question ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
 timer = datetime.datetime.now()
 
-questions = rev_fetch_all(cursor=cursor,arraysize=4000,table="Post")
+questions = rev_fetch_all(cursor=cursor,arraysize=2000,table="Post")
 
 print("Fetching for question ended in {} seconds.\nFounded {} records.\nStarting preparing question ID list...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(questions)))
 timer = datetime.datetime.now()
@@ -62,12 +63,12 @@ print("Size of question ID list is {} MB\n\n".format(sys.getsizeof(questionIDs)/
 print("Questions ID list made in {} seconds.\nStarting querying for answers of each question ID...(please, be patients)\n\n".format((datetime.datetime.now() - timer).total_seconds()))
 timer = datetime.datetime.now()
 
-cursor.execute("SELECT * FROM PostOriginale WHERE PostTypeId = 2 AND ParentId IN ({})".format(questionIDs))
+cursor.execute("SELECT * FROM Answers WHERE ParentId IN ({})".format(questionIDs))
 
 print("Querying for answers ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
 timer = datetime.datetime.now()
 
-answers = rev_fetch_all(cursor=cursor,arraysize=4000,table="Post")
+answers = rev_fetch_all(cursor=cursor,arraysize=2000,table="Post")
 
 print("Fetching for answers ended in {} seconds.\nFounded {} records.\nStarting exporting posts to JSON file \"Post.json\" and preparing answers ID list...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(answers)))
 timer = datetime.datetime.now()
@@ -92,7 +93,7 @@ cursor.execute("SELECT * FROM Comments WHERE PostId IN ({})".format(postIDs))
 print("Querying for comments ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
 timer = datetime.datetime.now()
 
-comments = rev_fetch_all(cursor=cursor,arraysize=4000,table="Comments")
+comments = rev_fetch_all(cursor=cursor,arraysize=2000,table="Comments")
 
 print("Fetching for comments ended in {} seconds.\nFounded {} records.\nStarting exporting to JSON file \"Comments.json\"...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(comments)))
 timer = datetime.datetime.now()
@@ -110,7 +111,7 @@ cursor.execute("SELECT * FROM PostLinks WHERE PostId IN ({})".format(postIDs))
 print("Querying for post links ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
 timer = datetime.datetime.now()
 
-post_links = rev_fetch_all(cursor=cursor,arraysize=4000,table="PostLinks")
+post_links = rev_fetch_all(cursor=cursor,arraysize=2000,table="PostLinks")
 
 print("Fetching for post links ended in {} seconds.\nFounded {} records.\nStarting exporting to JSON file \"PostLinks.json\"...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(post_links)))
 timer = datetime.datetime.now()
@@ -128,7 +129,7 @@ cursor.execute("SELECT * FROM PostReferenceGH WHERE PostId IN ({})".format(postI
 print("Querying for post reference GitHub ended in {} seconds, waiting for fetch...\n\n".format((datetime.datetime.now() - timer).total_seconds()))
 timer = datetime.datetime.now()
 
-post_GH = rev_fetch_all(cursor=cursor,arraysize=4000,table="PostReferenceGH")
+post_GH = rev_fetch_all(cursor=cursor,arraysize=2000,table="PostReferenceGH")
 
 print("Fetching for post reference GitHub ended in {} seconds.\nFounded {} records.\nStarting exporting to JSON file \"PostReferenceGH.json\"...\n\n".format((datetime.datetime.now() - timer).total_seconds(),len(post_GH)))
 timer = datetime.datetime.now()

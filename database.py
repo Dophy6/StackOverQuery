@@ -47,7 +47,7 @@ def searchAnswers(id = 0,question = 0):
                 "snippets": info["snippets"],
                 "gh_repos": info["gh_repos"],
                 "docs": info["docs"]
-            }
+            }    
         return answers
 
     except mysql.connector.Error as error:
@@ -68,6 +68,7 @@ def searchPostLink(id):
     return postLinkId
 
 def searchReferenceGH(id):
+    print("Searching referenceGH")
     referenceGH = []
     cursor.execute(" SELECT * FROM PostReferenceGH WHERE PostId = (%s) ",(id,))
     result = cursor.fetchall()
@@ -154,10 +155,10 @@ def searchSnippets(snippet):
     output = []
     print("Searching snippets... ")
 
-    cursor.execute("SELECT * FROM Answers WHERE Text LIKE %s ORDER BY Score DESC",("%" + snippet + "%",))
+    cursor.execute("SELECT * FROM Answers WHERE Body LIKE %s ORDER BY Score DESC",("%" + snippet + "%",))
     result = cursor.fetchall()
     for row in result:
-        output[row[0]] = (row[3],row[8])
+        output.append((row[3],scraper(row[8])))
     return output        
 
 
@@ -169,10 +170,11 @@ def choose(argument):
         searchQuestion(question)
     elif argument == '2': 
         pprint(searchAnswers(0,question))
+        
     elif argument == '3':
         searchComment(0,question)
-    #elif argument == '4':
-        #pprint(searchReferenceGH(22343224))
+    elif argument == '4':
+        pprint((searchSnippets(question)))
 
 def main():
     while True:
