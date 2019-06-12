@@ -35,9 +35,9 @@ def searchAnswers(id = 0,question = 0):
         print("searching answers .. \n")
         
         if id == 0:
-            cursor.execute("SELECT * FROM PostOriginale WHERE PostTypeId = 2 AND Body LIKE %s ORDER BY Score DESC",("%" + question + "%",))
+            cursor.execute("SELECT * FROM Answers WHERE Body LIKE %s ORDER BY Score DESC",("%" + question + "%",))
         else:
-            cursor.execute("SELECT * FROM PostOriginale WHERE PostTypeId = 2 AND ParentId = %s ORDER BY Score DESC",(id,))
+            cursor.execute("SELECT * FROM Answers WHERE ParentId = %s ORDER BY Score DESC",(id,))
         
         result = cursor.fetchall()
         for row in result:
@@ -67,6 +67,21 @@ def searchPostLink(id):
     }
     return postLinkId
 
+def searchReferenceGH(id):
+    referenceGH = []
+    cursor.execute(" SELECT * FROM PostReferenceGH WHERE PostId = (%s) ",(id,))
+    result = cursor.fetchall()
+
+    for row in result:
+        referenceGH.append({
+            "repo": row[1],
+            "branch": row[4],
+            "copies": row[8],
+            "SOUrl": row[11],
+            "linkFile": row[12]
+        })
+
+    return referenceGH
 
 
 def searchQuestion(question = 0):
@@ -103,7 +118,8 @@ def searchQuestion(question = 0):
             id = sys.stdin.readline().strip('\n')
             collection[str(id)]["postLink"] = searchPostLink(id)
             collection[str(id)]["answers"] = searchAnswers(id)
-            collection[str(id)]["comments"] = searchComment(id)         
+            collection[str(id)]["comments"] = searchComment(id)
+            collection[str(id)]["referenceGH"] = searchReferenceGH(id)        
             pprint(collection[id])
 
     except mysql.connector.Error as error:
@@ -134,6 +150,15 @@ def searchComment(id = 0, question = 0,):
     except mysql.connector.Error as error:
         print("Failed to get record from database: {}".format(error))
 
+def searchSnippets(snippet):
+    output = []
+    print("Searching snippets... ")
+
+    cursor.execute("SELECT * FROM Answers WHERE Text LIKE %s ORDER BY Score DESC",("%" + snippet + "%",))
+    result = cursor.fetchall()
+    for row in result:
+        output[row[0]] = (row[3],row[8])
+    return output        
 
 
 def choose(argument):
@@ -146,10 +171,11 @@ def choose(argument):
         pprint(searchAnswers(0,question))
     elif argument == '3':
         searchComment(0,question)
+    #elif argument == '4':
+        #pprint(searchReferenceGH(22343224))
 
 def main():
     while True:
-    
         print("Please choose the filter!")
         print("Press [1] to search a question")
         print("Press [2] to search an answers")
