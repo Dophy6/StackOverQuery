@@ -5,7 +5,6 @@ import webbrowser, os
 import datetime
 from pprint import pprint
 
-
 # Connect to database
 mydb = mysql.connector.connect(
     host = "localhost",
@@ -18,8 +17,20 @@ cursor = mydb.cursor()
 
 def writeFile(info,type):
     if type == "question":
-        json_text = json.dumps(info)
-        print(json_text)
+        with open('question.json', 'w') as f:
+            json.dump(info,f, indent = 4)
+    elif type == "moreInfo":
+        with open('moreInfo.json', 'w') as f:
+            json.dump(info, f, indent = 4)
+    elif type == "answers":
+        with open('answers.json', 'w') as f:
+            json.dump(info, f, indent = 4)
+    elif type == "comments":
+        with open('comments.json', 'w') as f:
+            json.dump(info, f, indent = 4)
+    elif type == "snippets":
+        with open('snippets.json', 'w') as f:
+            json.dump(info, f, indent = 4)
         
 
 def openBrowser():
@@ -52,7 +63,6 @@ def searchAnswers(id = 0,question = 0):
     except mysql.connector.Error as error:
         print("Failed to get record from database: {}".format(error))
 
-
 def searchPostLink(id):
     linkId = []
     postLinkId = {}
@@ -83,7 +93,6 @@ def searchReferenceGH(id):
 
     return referenceGH
 
-
 def searchQuestion(question = 0):
     try:
         cursor.execute("SELECT * FROM Post WHERE Title LIKE %s AND PostTypeId = 1 ORDER BY ViewCount DESC",("%" + question + "%",))
@@ -91,12 +100,12 @@ def searchQuestion(question = 0):
         result = cursor.fetchall()
         for row in result:
             print("Id =", row[0])
-            #print("PostTypeId =", row[1])
+            print("PostTypeId =", row[1])
             #print("Accepted Answer ID = ", row[2])
             print("Title: ", row[15])
             print("View: ", row[7])
             print("Answers: ",row[17])
-            print("Last Activity",row[14])
+            print("LastActivity",row[14])
             #print("Body = ",row[8])
             print("---------------")
 
@@ -106,12 +115,12 @@ def searchQuestion(question = 0):
                 "viewCount": row[7],
                 "answerCount": row[17],
                 "commentCount": row[18],
-                "lastActivityDate": row[14],
+                "lastActivityDate": (str(row[14])),
                 "body": row[8],
                 "postTypeId": row[1],
                 "acceptedAnswerId": row[2]
             }
-            #writeFile(collection[str(row[0])],"question")
+        writeFile(collection,"question")
         if result == []:
             print("No results found.. \n\n")
         else:
@@ -121,7 +130,7 @@ def searchQuestion(question = 0):
             collection[str(id)]["answers"] = searchAnswers(id)
             collection[str(id)]["comments"] = searchComment(id)
             collection[str(id)]["referenceGH"] = searchReferenceGH(id)        
-            #pprint(collection[id])
+            writeFile(collection[id],"moreInfo")
 
     except mysql.connector.Error as error:
         print("Failed to get record from database: {}".format(error))
@@ -136,16 +145,12 @@ def searchComment(id = 0, question = 0,):
 
         result = cursor.fetchall()
         comments = {}
-        if result == []:
-            print("No comments found.. \n\n")
-            return comments
-        else:
-            for row in result:
-                comments[str(row[0])] = {
-                    "postId": row[1],
-                    "score": row[2],
-                    "text": row[3]
-                }
+        for row in result:
+            comments[str(row[0])] = {
+                "postId": row[1],
+                "score": row[2],
+                "text": row[3]}
+
         return comments
 
     except mysql.connector.Error as error:
@@ -161,7 +166,6 @@ def searchSnippets(snippet):
         output.append((row[3],scraper(row[8])))
     return output        
 
-
 def choose(argument):
     print("Please enter the request..")
     question = sys.stdin.readline().strip('\n')
@@ -169,14 +173,20 @@ def choose(argument):
     if argument == '1':
         searchQuestion(question)
     elif argument == '2': 
-        pprint(searchAnswers(0,question))
-        
+        result = (searchAnswers(0,question))
+        pprint(result)
+        writeFile(result,"answers")
     elif argument == '3':
-        searchComment(0,question)
+        result = searchComment(0,question)
+        pprint(result)
+        writeFile(result,"comments")
     elif argument == '4':
-        pprint((searchSnippets(question)))
+        result = (searchSnippets(question))
+        pprint(result)
+        writeFile(result,"snippets")
 
 def main():
+
     while True:
         print("Please choose the filter!")
         print("Press [1] to search a question")
@@ -185,7 +195,6 @@ def main():
         print("Press [4] to search code snap")
         x = sys.stdin.readline().strip('\n')
         choose(x)
- 
 
 def scraper(body):
     link = list(set(list(map(lambda x: (x.split("\""))[0], body.split("href=\"")))[1:]))
