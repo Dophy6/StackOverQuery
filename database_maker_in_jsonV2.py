@@ -42,7 +42,6 @@ def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks
     BLOCK_DIM = 1000
     
     questionIDs = []
-    answersIDs = []
     
     while True:
         multiplier = proc_number
@@ -124,6 +123,7 @@ def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks
     
 
 if __name__ == '__main__':
+    print("Core number: {}".format(CORE_NUMBER))
     process_pool = []
     questions_queue = Queue()
     answers_queue = Queue()
@@ -131,7 +131,8 @@ if __name__ == '__main__':
     postlinks_queue = Queue()
     postreferGH_queue = Queue()
     
-    for i in range(2*CORE_NUMBER):
+    for i in range(CORE_NUMBER):
+        print("Process {} started..".format(i))
         p = Process(target=main_func, args=(i,questions_queue,answers_queue,comments_queue,postlinks_queue,postreferGH_queue))
         process_pool.append(p)
         p.start()
@@ -139,47 +140,46 @@ if __name__ == '__main__':
     for p in process_pool:
         p.join()
 
-    print("Starting saving questions")
-    questions = []
-    for q in questions_queue.get():
-        questions += q
+    print("Starting iterating questions")
+    questions = [item for sublist in questions_queue.get() for item in sublist ]
+    print("Start saving to json file..")
     with open("Questions.json","a") as f:
         json.dump(questions,f)
     questions = None
     del questions
     
-    print("Starting saving answers")
-    answers = []
-    for q in answers_queue.get():
-        answers += q
+    print("Starting iterating answers")
+    answers = [item for sublist in answers_queue.get() for item in sublist ]
+    print("Start saving to json file..")
     with open("Answers.json","a") as f:
         json.dump(answers,f)
     answers = None
     del answers
 
-    print("Starting saving comments")
-    comments = []
-    for q in comments_queue.get():
-        comments += q
+    print("Starting iterating comments")
+    comments = [item for sublist in comments_queue.get() for item in sublist ]
+    print("Start saving to json file..")
     with open("Comments.json","a") as f:
         json.dump(comments,f)
     comments = None
     del comments
 
-    print("Starting saving post links")
-    post_links = []
-    for q in postlinks_queue.get():
-        post_links += q
+    print("Starting iterating post links")
+    post_links = [item for sublist in postlinks_queue.get() for item in sublist ]
+    print("Start saving to json file..")
     with open("PostLinks.json","a") as f:
         json.dump(post_links,f)
     post_links = None
     del post_links
 
-    print("Starting saving PostReferenceGH")
-    post_GH = []
-    for q in postreferGH_queue.get():
-        post_GH += q
+    print("Starting iterating PostReferenceGH")
+    post_GH = [item for sublist in postreferGH_queue.get() for item in sublist ]
+    print("Start saving to json file..")
     with open("PostReferenceGH.json","a") as f:
         json.dump(post_GH,f)
     post_GH = None
     del post_GH
+
+
+
+#prova a pushare nella coda direttamente i singoli elementi per poi non doverli ciclare dopo
