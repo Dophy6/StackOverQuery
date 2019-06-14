@@ -1,3 +1,6 @@
+#IMPORTANT! Before starting this script, please check if db table's names match with your dump
+
+
 import mysql.connector, json, datetime, sys, os
 from multiprocessing import Process, Queue
 
@@ -5,7 +8,7 @@ START_DATE = datetime.datetime(2014,1,1)
 END_DATE = datetime.datetime(2015,1,1)
 #YYYY-MM-DD HH:MM:SS datetime mysql format
 
-CORE_NUMBER = os.cpu_count()
+WRITER_CORE_NUMBER = os.cpu_count() - 1 #this script is made to work whit 4 core processor
 
 def datetime_parser(mydatetime, mysql=False):
     if mydatetime == None: return mydatetime
@@ -30,7 +33,7 @@ def rev_fetch_all(cursor,arraysize,table=None):
 
     return container
 
-def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks_queue,postreferGH_queue):
+def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks_queue,postreferGH_queue,logger):
     mydb = mysql.connector.connect(
         host = "localhost",
         user = "santo",
@@ -56,9 +59,9 @@ def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks
         if len(questions) < BLOCK_DIM:
             break
         else:
-            multiplier += CORE_NUMBER
-
-    print("PROCESS {} has {} questions.\n".format(proc_number,len(questionIDs)))
+            multiplier += WRITER_CORE_NUMBER
+    questions_queue.put("DONE")
+    logger.write("\nPROCESS {} - has {} questions.\n".format(proc_number,len(questionIDs)))
 
     while True:
         limit= [0,BLOCK_DIM]
@@ -73,8 +76,8 @@ def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks
         else:
             limit[0]+=BLOCK_DIM
             limit[1]+=BLOCK_DIM
-    
-    print("PROCESS {} has {} posts.\n".format(proc_number,len(questionIDs)))
+    answers_queue.put("DONE")
+    logger.write("\nPROCESS {} - has {} posts.\n".format(proc_number,len(questionIDs)))
 
     while True:
         limit= [0,BLOCK_DIM]
@@ -88,8 +91,8 @@ def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks
         else:
             limit[0]+=BLOCK_DIM
             limit[1]+=BLOCK_DIM
-    
-    print("PROCESS {} has finished comments.\n".format(proc_number))
+    comments_queue.put("DONE")
+    logger.write("\nPROCESS {} - has finished comments.\n".format(proc_number))
     
     while True:
         limit= [0,BLOCK_DIM]
@@ -103,8 +106,8 @@ def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks
         else:
             limit[0]+=BLOCK_DIM
             limit[1]+=BLOCK_DIM
-    
-    print("PROCESS {} has finished post links.\n".format(proc_number))
+    postlinks_queue.put("DONE")
+    logger.write("\nPROCESS {} - has finished post links.\n".format(proc_number))
 
     while True:
         limit= [0,BLOCK_DIM]
@@ -118,68 +121,51 @@ def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks
         else:
             limit[0]+=BLOCK_DIM
             limit[1]+=BLOCK_DIM
+    postreferGH_queue.put("DONE")
+    logger.write("\nPROCESS {} - has finished PostReferenceGH.\n".format(proc_number))
     
-    print("PROCESS {} has finished PostReferenceGH.\n".format(proc_number))
-    
+def read_queues(questions_queue,answers_queue,comments_queue,postlinks_queue,postreferGH_queue,logger):
+    queues=[questions_queue,answers_queue,comments_queue,postlinks_queue,postreferGH_queue]
+    queues_obj = ["questions","answers","comments","postlinks","postreferGH"]
+    container = []
+    for i in range(len(queues)):
+        done = 0
+        logger.write("\nREADER - is starting iterating {}\n".format(queues_obj[i]))
+        
+        while True:
+            objs = queues[i].get()
+            if objs == "DONE":
+                done += 1
+                if done >= WRITER_CORE_NUMBER:
+                    break
+            else:
+                container += objs
+        
+        logger.write("\nREADER - is start saving to json file: {}.json\n".format(queues_obj[i]))
+        with open("{}.json".format(queues_obj[i]),"a") as f:
+            json.dump(container,f)
+        container = None
 
 if __name__ == '__main__':
-    print("Core number: {}".format(CORE_NUMBER))
+    print("Core number: {}".format(WRITER_CORE_NUMBER))
     process_pool = []
     questions_queue = Queue()
     answers_queue = Queue()
     comments_queue = Queue()
     postlinks_queue = Queue()
     postreferGH_queue = Queue()
-    
-    for i in range(CORE_NUMBER):
-        print("Process {} started..".format(i))
-        p = Process(target=main_func, args=(i,questions_queue,answers_queue,comments_queue,postlinks_queue,postreferGH_queue))
+
+    for i in range(WRITER_CORE_NUMBER):
+        print("Process {} started..\n".format(i))
+        p = Process(target=main_func, args=(i,questions_queue,answers_queue,comments_queue,postlinks_queue,postreferGH_queue,sys.stdout))
         process_pool.append(p)
         p.start()
-    
+    print("Process reader started..\n")
+    reader = Process(target=read_queues, args=(questions_queue,answers_queue,comments_queue,postlinks_queue,postreferGH_queue,sys.stdout))
+
     for p in process_pool:
         p.join()
 
-    print("Starting iterating questions")
-    questions = [item for sublist in questions_queue.get() for item in sublist ]
-    print("Start saving to json file..")
-    with open("Questions.json","a") as f:
-        json.dump(questions,f)
-    questions = None
-    del questions
-    
-    print("Starting iterating answers")
-    answers = [item for sublist in answers_queue.get() for item in sublist ]
-    print("Start saving to json file..")
-    with open("Answers.json","a") as f:
-        json.dump(answers,f)
-    answers = None
-    del answers
-
-    print("Starting iterating comments")
-    comments = [item for sublist in comments_queue.get() for item in sublist ]
-    print("Start saving to json file..")
-    with open("Comments.json","a") as f:
-        json.dump(comments,f)
-    comments = None
-    del comments
-
-    print("Starting iterating post links")
-    post_links = [item for sublist in postlinks_queue.get() for item in sublist ]
-    print("Start saving to json file..")
-    with open("PostLinks.json","a") as f:
-        json.dump(post_links,f)
-    post_links = None
-    del post_links
-
-    print("Starting iterating PostReferenceGH")
-    post_GH = [item for sublist in postreferGH_queue.get() for item in sublist ]
-    print("Start saving to json file..")
-    with open("PostReferenceGH.json","a") as f:
-        json.dump(post_GH,f)
-    post_GH = None
-    del post_GH
 
 
 
-#prova a pushare nella coda direttamente i singoli elementi per poi non doverli ciclare dopo
