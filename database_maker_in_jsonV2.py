@@ -8,8 +8,8 @@ from multiprocessing import Process, Queue
 START_DATE = datetime.datetime(2014,1,1)
 END_DATE = datetime.datetime(2015,1,1)
 #YYYY-MM-DD HH:MM:SS datetime mysql format
-READER_CORE_NUMBER = os.cpu_count()/4 if os.cpu_count()/4 >= 1 else 1
-WRITER_CORE_NUMBER = os.cpu_count() - READER_CORE_NUMBER
+READER_CORE_NUMBER = int(os.cpu_count()/4) if int(os.cpu_count()/4) >= 1 else 1
+WRITER_CORE_NUMBER = int(os.cpu_count() - READER_CORE_NUMBER)
 
 def datetime_parser(mydatetime, mysql=False):
     if mydatetime == None: return mydatetime
