@@ -145,7 +145,7 @@ def read_queues(questions_queue,answers_queue,comments_queue,postlinks_queue,pos
         
         while True:
             objs = queues[i].get()
-            if str(res).startswith("DONE"):
+            if str(objs).startswith("DONE"):
                 if objs == "DONE{}".format(proc_number):
                     done += 1
                     if done >= WRITER_CORE_NUMBER:
