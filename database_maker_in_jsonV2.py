@@ -177,7 +177,7 @@ if __name__ == '__main__':
         p.start()
     for i in range(READER_CORE_NUMBER):
         print("Process reader started..\n")
-        reader = Process(target=read_queues, args=(questions_queue,answers_queue,comments_queue,postlinks_queue,postreferGH_queue,sys.stdout))
+        reader = Process(target=read_queues, args=(questions_queue,answers_queue,comments_queue,postlinks_queue,postreferGH_queue,sys.stdout,i))
         process_pool.append(reader)
         reader.start()
     
