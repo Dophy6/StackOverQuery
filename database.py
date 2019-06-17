@@ -5,6 +5,8 @@ import webbrowser, os
 import datetime
 from pprint import pprint
 
+PRINT_LIMIT = 25
+
 # Connect to database
 mydb = mysql.connector.connect(
     host = "localhost",
@@ -77,17 +79,17 @@ def searchQuestion(question = 0):
         result = cursor.fetchall()
         print_count=0
         for row in result:
-            if print_count < 25
+            if print_count < PRINT_LIMIT:
                 print("Id =", row[0])
                 print("PostTypeId =", row[1])
-                #print("Accepted Answer ID = ", row[2])
                 print("Title: ", row[15])
                 print("View: ", row[7])
                 print("Answers: ",row[17])
                 print("LastActivity",row[14])
-                #print("Body = ",row[8])
                 print("---------------")
                 print_count += 1
+                if print_count >= PRINT_LIMIT:
+                    print("\nThese are the first 25 results, to see them all check the file question.json\n")
             
             collection[str(row[0])] = {
                 "title": row[15], 
