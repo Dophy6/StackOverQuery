@@ -33,10 +33,6 @@ def writeFile(info,type):
             json.dump(info, f, indent = 4)
         
 
-def openBrowser():
-    url = "file:///home/santino/Scrivania/Uni/sistemiDistribuiti/Progetto/Database/main.html"
-    webbrowser.open(url)
-
 def searchAnswers(id = 0,question = 0):
     try:
         answers = {}
@@ -131,7 +127,7 @@ def searchQuestion(question = 0):
             collection[str(id)]["comments"] = searchComment(id)
             collection[str(id)]["referenceGH"] = searchReferenceGH(id)        
             writeFile(collection[id],"moreInfo")
-
+            pprint(collection)
     except mysql.connector.Error as error:
         print("Failed to get record from database: {}".format(error))
 
