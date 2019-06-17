@@ -45,14 +45,7 @@ def searchAnswers(id = 0,question = 0):
         print("Query answers: {}".format((datetime.datetime.now()-timer).total_seconds()))
         timer = datetime.datetime.now()
         result = cursor.fetchall()
-        for row in result:
-            info = scraper(row[8])
-            answers[str(row[0])] = {
-                "body": row[8],
-                "snippets": info["snippets"],
-                "gh_repos": info["gh_repos"],
-                "docs": info["docs"]
-            } 
+        answers = dict(map(lambda y: [str(y[0]),{"body": y[1],"snippets": y[2]["snippets"],"gh_repos": y[2]["gh_repos"],"docs": y[2]["docs"]}] , list(map(lambda x: [x[0],x[8],scraper(x[8])], result))))
         print("Fetch answers: {}".format((datetime.datetime.now()-timer).total_seconds()))
         return answers
 
@@ -64,30 +57,17 @@ def searchPostLink(id):
     postLinkId = {}
     cursor.execute(" SELECT * FROM PostLink WHERE RelatedPostId = (%s) ",(id,))
     result = cursor.fetchall()
-    for row in result:
-        linkId.append(row[2])   
     postLinkId = {
         "NumOfLink": len(result),
-        "linkId": linkId # Id di post che fanno rifermento al post analizzato
+        "linkId": list(map(lambda x: x[2],result)) # Id di post che fanno rifermento al post analizzato
     }
     return postLinkId
 
 def searchReferenceGH(id):
     print("Searching referenceGH")
-    referenceGH = []
     cursor.execute(" SELECT * FROM PostReferenceGH WHERE PostId = (%s) ",(id,))
     result = cursor.fetchall()
-
-    for row in result:
-        referenceGH.append({
-            "repo": row[1],
-            "branch": row[4],
-            "copies": row[8],
-            "SOUrl": row[11],
-            "linkFile": row[12]
-        })
-
-    return referenceGH
+    return list(map(lambda x: {"repo": x[1],"branch": x[4],"copies": x[8],"SOUrl": x[11],"linkFile": x[12]},result))
 
 def searchQuestion(question = 0):
     try:
@@ -140,46 +120,38 @@ def searchComment(id = 0, question = 0,):
             cursor.execute("SELECT * FROM Comments WHERE PostId = (%s) ORDER BY Score DESC", (id,))
 
         result = cursor.fetchall()
-        comments = {}
-        for row in result:
-            comments[str(row[0])] = {
-                "postId": row[1],
-                "score": row[2],
-                "text": row[3]}
-
-        return comments
+        return dict(map(lambda x: [str(x[0]),{"postId": x[1],"score": x[2],"text": x[3]}] , result))
 
     except mysql.connector.Error as error:
         print("Failed to get record from database: {}".format(error))
 
 def searchSnippets(snippet):
-    output = []
     print("Searching snippets... ")
-
     cursor.execute("SELECT * FROM Answers WHERE Body LIKE %s ORDER BY Score DESC",("%" + snippet + "%",))
     result = cursor.fetchall()
-    for row in result:
-        output.append((row[3],scraper(row[8])))
-    return output        
+    return list(map(lambda x: (x[3],scraper(x[8])),result))       
 
 def choose(argument):
-    print("Please enter the request..")
-    question = sys.stdin.readline().strip('\n')
-    
-    if argument == '1':
-        searchQuestion(question)
-    elif argument == '2': 
-        result = (searchAnswers(0,question))
-        pprint(result)
-        writeFile(result,"answers")
-    elif argument == '3':
-        result = searchComment(0,question)
-        pprint(result)
-        writeFile(result,"comments")
-    elif argument == '4':
-        result = (searchSnippets(question))
-        pprint(result)
-        writeFile(result,"snippets")
+    if argument not in ["1","2","3","4"]:
+        print("\nFilter {} not available.\n".format(argument))
+    else:
+        print("Please enter the request..")
+        question = sys.stdin.readline().strip('\n')
+        
+        if argument == '1':
+            searchQuestion(question)
+        elif argument == '2': 
+            result = (searchAnswers(0,question))
+            pprint(result)
+            writeFile(result,"answers")
+        elif argument == '3':
+            result = searchComment(0,question)
+            pprint(result)
+            writeFile(result,"comments")
+        elif argument == '4':
+            result = (searchSnippets(question))
+            pprint(result)
+            writeFile(result,"snippets")
 
 def main():
 
@@ -200,7 +172,7 @@ def scraper(body):
     return {"docs":link, "gh_repos":gh_link, "snippets":code}
 
 def is_code(code):
-    return True if len(code.split()) > 1 and len(list(filter(lambda x: x not in code, [".",";","=","!","+","-","*",":","\"","\'","&","|","%"]))) > 0 else False
+    return True if len(code)>15 and len(code.split()) > 1 and len(list(filter(lambda x: x not in code, [".",";","=","!","+","-","*",":","\"","\'","&","|","%"]))) > 0 else False
 
 if __name__ == "__main__":
     main()
