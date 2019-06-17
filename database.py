@@ -71,7 +71,7 @@ def searchReferenceGH(id):
 
 def searchQuestion(question = 0):
     try:
-        cursor.execute("SELECT * FROM Post WHERE MATCH (Title) AGAINST ('%s') AND PostTypeId = 1 ORDER BY ViewCount DESC",(question))
+        cursor.execute("SELECT * FROM Post WHERE MATCH (Title) AGAINST (%s) AND PostTypeId = 1 ORDER BY ViewCount DESC",(question))
         collection = {}
         result = cursor.fetchall()
         for row in result:
