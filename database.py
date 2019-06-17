@@ -75,18 +75,20 @@ def searchQuestion(question = 0):
         cursor.execute("SELECT * FROM Post WHERE MATCH (Title) AGAINST ('{}' IN BOOLEAN MODE) AND PostTypeId = 1 ORDER BY ViewCount DESC".format(question))
         collection = {}
         result = cursor.fetchall()
+        print_count=0
         for row in result:
-            print("Id =", row[0])
-            print("PostTypeId =", row[1])
-            #print("Accepted Answer ID = ", row[2])
-            print("Title: ", row[15])
-            print("View: ", row[7])
-            print("Answers: ",row[17])
-            print("LastActivity",row[14])
-            #print("Body = ",row[8])
-            print("---------------")
-            sys.stdout.flush()
-
+            if print_count < 25
+                print("Id =", row[0])
+                print("PostTypeId =", row[1])
+                #print("Accepted Answer ID = ", row[2])
+                print("Title: ", row[15])
+                print("View: ", row[7])
+                print("Answers: ",row[17])
+                print("LastActivity",row[14])
+                #print("Body = ",row[8])
+                print("---------------")
+                print_count += 1
+            
             collection[str(row[0])] = {
                 "title": row[15], 
                 "viewCount": row[7],
