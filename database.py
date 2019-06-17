@@ -85,7 +85,7 @@ def searchQuestion(question = 0):
             print("LastActivity",row[14])
             #print("Body = ",row[8])
             print("---------------")
-
+            sys.stdout.flush()
 
             collection[str(row[0])] = {
                 "title": row[15], 
