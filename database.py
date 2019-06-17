@@ -47,7 +47,11 @@ def searchAnswers(id = 0,question = 0):
         print("Query answers: {}".format((datetime.datetime.now()-timer).total_seconds()))
         timer = datetime.datetime.now()
         result = cursor.fetchall()
-        answers = dict(map(lambda y: [str(y[0]),{"body": y[1],"snippets": y[2]["snippets"],"gh_repos": y[2]["gh_repos"],"docs": y[2]["docs"]}] , list(map(lambda x: [x[0],x[8],scraper(x[8])], result))))
+        if id != 0:
+            answers = dict(map(lambda y: [str(y[0]),{"body": y[1],"snippets": y[2]["snippets"],"gh_repos": y[2]["gh_repos"],"docs": y[2]["docs"],"comments": searchComment(y[0])}] , list(map(lambda x: [x[0],x[8],scraper(x[8])], result))))
+        else:
+            answers = dict(map(lambda y: [str(y[0]),{"body": y[1],"snippets": y[2]["snippets"],"gh_repos": y[2]["gh_repos"],"docs": y[2]["docs"],"comments": searchComment(y[0])}] , list(map(lambda x: [x[0],x[8],scraper(x[8])], result))))
+        
         print("Fetch answers: {}".format((datetime.datetime.now()-timer).total_seconds()))
         return answers
 
