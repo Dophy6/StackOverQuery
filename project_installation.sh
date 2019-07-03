@@ -4,41 +4,43 @@ echo "Install requirements"
 
 sudo apt update
 sudo apt-get install p7zip
-sudo apt  install jq
+yes |sudo apt  install jq
 sudo apt install -y debconf-utils
 
 export DEBIAN_FRONTEND="noninteractive"
 
-echo "mysql-server-5.6 mysql-server/root_password password root" | sudo debconf-set-selections
-echo "mysql-server-5.6 mysql-server/root_password_again password root" | sudo debconf-set-selections
-sudo apt-get install -y mysql-server-5.6
+echo "mysql-server mysql-server/root_password password root" | sudo debconf-set-selections
+echo "mysql-server mysql-server/root_password_again password root" | sudo debconf-set-selections
+sudo apt-get install -y mysql-server
 
 #mysql_secure_installation
 
 
-sudo mysql <<EOF
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'progetto_distribuiti19';
-FLUSH PRIVILEGES;
-exit;
-EOF
+#sudo mysql <<EOF
+#ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'progetto_distribuiti19';
+#FLUSH PRIVILEGES;
+#exit;
+#EOF
 
-systemctl enable mysql.service
+sudo systemctl enable mysql.service
 sudo apt-get install python3
-S | sudo apt install python3-pip
-pip install mysql-connector-python
-pip install multiprocessing
+yes | sudo apt install python3-pip
+pip3 -H install mysql-connector-python
+#pip install multiprocessing
 
-DOWNLOAD_PATH = jq .INSTALLATION.DOWNLOAD_PATH config.json
+#DOWNLOAD_PATH = jq -r .INSTALLATION.DOWNLOAD_PATH config.json
+DOWNLOAD_PATH="/home/vagrant/test" 
+echo $DOWNLOAD_PATH
 # Downloading dump
 
 echo "Start to download Posts.xml.7z"
-wget  -P DOWNLOAD_PATH "https://zenodo.org/record/2628274/files/Posts.xml.7z?download=1"
+wget  -P $DOWNLOAD_PATH "https://zenodo.org/record/2628274/files/Posts.xml.7z?download=1"
 echo "Start to download PostReferenceGH.csv.7z"
-wget  -P DOWNLOAD_PATH "https://zenodo.org/record/2628274/files/PostReferenceGH.csv.7z?download=1"
+wget  -P $DOWNLOAD_PATH "https://zenodo.org/record/2628274/files/PostReferenceGH.csv.7z?download=1"
 echo "Start to download PostLinks.xml.7z"
-wget  -P DOWNLOAD_PATH "https://zenodo.org/record/2628274/files/PostLinks.xml.7z?download=1"
+wget  -P $DOWNLOAD_PATH "https://zenodo.org/record/2628274/files/PostLinks.xml.7z?download=1"
 echo "Start to download Comments.xml.7z"
-wget  -P DOWNLOAD_PATH "https://zenodo.org/record/2628274/files/Comments.xml.7z?download=1"
+wget  -P $DOWNLOAD_PATH "https://zenodo.org/record/2628274/files/Comments.xml.7z?download=1"
 
 echo "Un-zipping and deleting dump.7z"
 
@@ -53,7 +55,7 @@ rm $DOWNLOAD_PATH$"Comments.xml.7z"
 
 echo "Creating database and importing data"
 
-mysql -u root -pprogetto_distribuiti19 <<EOF
+mysql -u root -proot <<EOF
 CREATE DATABASE SistemiDistribuiti;
 USE SistemiDistribuiti;
 CREATE TABLE Posts (Id INT(11) NOT NULL PRIMARY KEY, PostTypeId TINYINT(4), AcceptedAnswerId INT(11), ParentId INT(11), CreationDate DATETIME, DeletionDate DATETIME, Score INT(11), ViewCount INT(11), Body TEXT, OwnerUserId INT(11), OwnerDisplayName VARCHAR(40), LastEditorUserId INT(11), LastEditorDisplayName VARCHAR(40), LastEditDate DATETIME, LastActivityDate DATETIME, Title VARCHAR(250), Tags VARCHAR(150), AnswerCount INT(11), CommentCount INT(11), FavoriteCount INT(11), ClosedDate DATETIME, CommunityOwnedDate DATETIME);
@@ -84,7 +86,7 @@ python3 database_maker_in_csv.py
 
 echo "Recreate database from csv"
 
-mysql -u root -pprogetto_distribuiti19 <<EOF
+mysql -u root -proot <<EOF
 USE SistemiDistribuiti;
 DROP TABLE [IF EXIST] [Posts], [Comments], [PostLinks], [PostReferenceGH];
 CREATE TABLE Questions (Id INT(11) NOT NULL PRIMARY KEY, PostTypeId TINYINT(4), AcceptedAnswerId INT(11), ParentId INT(11), CreationDate DATETIME, DeletionDate DATETIME, Score INT(11), ViewCount INT(11), Body TEXT, OwnerUserId INT(11), OwnerDisplayName VARCHAR(40), LastEditorUserId INT(11), LastEditorDisplayName VARCHAR(40), LastEditDate DATETIME, LastActivityDate DATETIME, Title VARCHAR(250), Tags VARCHAR(150), AnswerCount INT(11), CommentCount INT(11), FavoriteCount INT(11), ClosedDate DATETIME, CommunityOwnedDate DATETIME);
