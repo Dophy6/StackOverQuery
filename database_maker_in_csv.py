@@ -39,7 +39,7 @@ def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks
     mydb = mysql.connector.connect(
         host = "localhost",
         user = "root",
-        passwd = "progetto_distribuiti19",
+        passwd = "root",
         database = "SistemiDistribuiti"
     )
     cursor = mydb.cursor()

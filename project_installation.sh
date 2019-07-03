@@ -25,7 +25,7 @@ sudo apt-get install -y mysql-server
 sudo systemctl enable mysql.service
 sudo apt-get install python3
 yes | sudo apt install python3-pip
-pip3 -H install mysql-connector-python
+pip3 install mysql-connector-python
 #pip install multiprocessing
 
 #DOWNLOAD_PATH = jq -r .INSTALLATION.DOWNLOAD_PATH config.json

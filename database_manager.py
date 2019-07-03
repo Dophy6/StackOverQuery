@@ -10,7 +10,7 @@ PRINT_LIMIT = 25
 mydb = mysql.connector.connect(
     host = "localhost",
     user = "root",
-    passwd = "progetto_distribuiti19",
+    passwd = "root",
     database = "SistemiDistribuiti"
 )
 cursor = mydb.cursor()
