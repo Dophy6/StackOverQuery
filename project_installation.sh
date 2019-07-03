@@ -5,7 +5,16 @@ echo "Install requirements"
 sudo apt update
 sudo apt-get install p7zip
 sudo apt  install jq
-sudo apt install mysql-server
+sudo apt install -y debconf-utils
+
+export DEBIAN_FRONTEND="noninteractive"
+
+echo "mysql-server-5.6 mysql-server/root_password password root" | sudo debconf-set-selections
+echo "mysql-server-5.6 mysql-server/root_password_again password root" | sudo debconf-set-selections
+sudo apt-get install -y mysql-server-5.6
+
+#mysql_secure_installation
+
 
 sudo mysql <<EOF
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'progetto_distribuiti19';
@@ -15,7 +24,7 @@ EOF
 
 systemctl enable mysql.service
 sudo apt-get install python3
-sudo apt install python3-pip
+S | sudo apt install python3-pip
 pip install mysql-connector-python
 pip install multiprocessing
 
