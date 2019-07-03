@@ -28,19 +28,18 @@ yes | sudo apt install python3-pip
 pip3 install mysql-connector-python
 #pip install multiprocessing
 
-#DOWNLOAD_PATH = jq -r .INSTALLATION.DOWNLOAD_PATH config.json
-DOWNLOAD_PATH="/home/vagrant/test" 
-echo $DOWNLOAD_PATH
+DOWNLOAD_PATH=$(jq -r '.INSTALLATION.DOWNLOAD_PATH' config.json) 
+echo "Download path is: "$DOWNLOAD_PATH
 # Downloading dump
 
 echo "Start to download Posts.xml.7z"
-wget  -P $DOWNLOAD_PATH "https://zenodo.org/record/2628274/files/Posts.xml.7z?download=1"
+wget -O $DOWNLOAD_PATH"/Posts.xml.7z" "https://zenodo.org/record/2628274/files/Posts.xml.7z?download=1"
 echo "Start to download PostReferenceGH.csv.7z"
-wget  -P $DOWNLOAD_PATH "https://zenodo.org/record/2628274/files/PostReferenceGH.csv.7z?download=1"
+wget -O $DOWNLOAD_PATH"/PostReferenceGH.csv.7z" "https://zenodo.org/record/2628274/files/PostReferenceGH.csv.7z?download=1"
 echo "Start to download PostLinks.xml.7z"
-wget  -P $DOWNLOAD_PATH "https://zenodo.org/record/2628274/files/PostLinks.xml.7z?download=1"
+wget -O $DOWNLOAD_PATH"/PostLinks.xml.7z" "https://zenodo.org/record/2628274/files/PostLinks.xml.7z?download=1"
 echo "Start to download Comments.xml.7z"
-wget  -P $DOWNLOAD_PATH "https://zenodo.org/record/2628274/files/Comments.xml.7z?download=1"
+wget -O $DOWNLOAD_PATH"/Comments.xml.7z" "https://zenodo.org/record/2628274/files/Comments.xml.7z?download=1"
 
 echo "Un-zipping and deleting dump.7z"
 
