@@ -12,6 +12,8 @@ END_DATE = datetime.datetime.strptime(CONFIG["DB_MAKER"]["END_DATE"], "%Y-%m-%d"
 READER_CORE_NUMBER = (int(os.cpu_count()/4) if int(os.cpu_count()/4) >= 1 else 1) if CONFIG["DB_MAKER"]["READER_CORE_NUMBER"] == "DEFAULT" else int(CONFIG["DB_MAKER"]["READER_CORE_NUMBER"])
 WRITER_CORE_NUMBER = (int(os.cpu_count() - READER_CORE_NUMBER)) if CONFIG["DB_MAKER"]["WRITER_CORE_NUMBER"] == "DEFAULT" else int(CONFIG["DB_MAKER"]["WRITER_CORE_NUMBER"])
 
+DOWNLOAD_PATH = CONFIG["INSTALLATION"]["DOWNLOAD_PATH"]
+
 def datetime_parser(mydatetime, mysql=True):
     if mydatetime == None: return mydatetime
     return mydatetime.strftime("'%Y-%m-%d %H:%M:%S'") if mysql else mydatetime.strftime("%Y-%m-%d %H:%M:%S")
@@ -159,7 +161,7 @@ def read_queues(questions_queue,answers_queue,comments_queue,postlinks_queue,pos
         
         "".join(container)
         logger.write("\nREADER {} - is start saving to csv file: {}.csv\n".format(proc_number, queues_obj[i]))
-        with open("{}.csv".format(queues_obj[i]),"w") as f:
+        with open("{}/{}.csv".format(DOWNLOAD_PATH,queues_obj[i]),"w") as f:
             f.write(container)
         container = None
 
