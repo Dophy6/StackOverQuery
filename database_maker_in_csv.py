@@ -50,14 +50,18 @@ def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks
     
     questionIDs = []
     
+    multiplier = proc_number
+
     while True:
-        multiplier = proc_number
-        limit = BLOCK_DIM*multiplier
+        record_from = BLOCK_DIM*multiplier
+        record_to = record_from + BLOCK_DIM
         
-        cursor.execute("SELECT * FROM Posts WHERE PostTypeId = 1 AND CreationDate BETWEEN {} AND {} LIMIT {},{}".format(datetime_parser(START_DATE,True),datetime_parser(END_DATE,True),limit,BLOCK_DIM))
+        cursor.execute("SELECT * FROM Posts WHERE PostTypeId = 1 AND CreationDate BETWEEN {} AND {} LIMIT {}, {};".format(datetime_parser(START_DATE,True),datetime_parser(END_DATE,True),record_from,record_to))
+        
         questions = rev_fetch_all(cursor=cursor,arraysize=250,table="Post")
         
-        questionIDs = (str(list(map(lambda x: x["Id"] ,questions))))[1:-1]
+        questionIDs += list(map(lambda x: (x.split(","))[0] ,questions))
+        
         questions_queue.put(questions)
         
         if len(questions) < BLOCK_DIM:
@@ -68,16 +72,23 @@ def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks
     for i in range(READER_CORE_NUMBER):
         questions_queue.put("DONE{}".format(i))
     logger.write("\nPROCESS {} - has {} questions.\n".format(proc_number,len(questionIDs)))
-
+    
+    answerIDs = []
+    limit= [0,BLOCK_DIM]
+    
     while True:
-        limit= [0,BLOCK_DIM]
-        cursor.execute("SELECT * FROM Posts WHERE ParentId IN ({}) LIMIT {},{}".format(questionIDs, limit[0],limit[1]))
-        answers = rev_fetch_all(cursor=cursor,arraysize=250,table="Post")
-
-        questionIDs += ", " + (str(list(map(lambda x: str(x["Id"]) ,answers))))[1:-1]
-        answers_queue.put(answers)
         
-        if len(answers) < BLOCK_DIM:
+        limited_ID_list = questionIDs[limit[0]:limit[1]]
+        
+        limited_ID_list = (str(limited_ID_list))[1:-1]
+
+        if limited_ID_list != "":
+            cursor.execute("SELECT * FROM Posts WHERE ParentId IN ({})".format(limited_ID_list))
+            answers = rev_fetch_all(cursor=cursor,arraysize=250,table="Post")
+            answerIDs += list(map(lambda x: (x.split(","))[0] ,answers))
+            answers_queue.put(answers)
+        
+        if len(limited_ID_list.split(",")) < BLOCK_DIM:
             break
         else:
             limit[0]+=BLOCK_DIM
@@ -85,16 +96,25 @@ def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks
     
     for i in range(READER_CORE_NUMBER):
         answers_queue.put("DONE{}".format(i))
+
+    questionIDs += answerIDs
+    answerIDs = None
+    del answerIDs
     logger.write("\nPROCESS {} - has {} posts.\n".format(proc_number,len(questionIDs)))
 
+    limit= [0,BLOCK_DIM]
     while True:
-        limit= [0,BLOCK_DIM]
-        cursor.execute("SELECT * FROM Comments WHERE PostId IN ({}) LIMIT {},{}".format(questionIDs, limit[0],limit[1]))
-        comments = rev_fetch_all(cursor=cursor,arraysize=250,table="Comments")
-
-        comments_queue.put(comments)
         
-        if len(comments) < BLOCK_DIM:
+        limited_ID_list = questionIDs[limit[0]:limit[1]]
+        
+        limited_ID_list = (str(limited_ID_list))[1:-1]
+
+        if limited_ID_list != "":
+            cursor.execute("SELECT * FROM Comments WHERE PostId IN ({})".format(limited_ID_list))
+            comments = rev_fetch_all(cursor=cursor,arraysize=250,table="Comments")
+            comments_queue.put(comments)
+        
+        if len(limited_ID_list.split(",")) < BLOCK_DIM:
             break
         else:
             limit[0]+=BLOCK_DIM
@@ -104,14 +124,19 @@ def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks
         comments_queue.put("DONE{}".format(i))
     logger.write("\nPROCESS {} - has finished comments.\n".format(proc_number))
     
+    limit= [0,BLOCK_DIM]
     while True:
-        limit= [0,BLOCK_DIM]
-        cursor.execute("SELECT * FROM PostLinks WHERE PostId IN ({}) LIMIT {},{}".format(questionIDs, limit[0],limit[1]))
-        post_links = rev_fetch_all(cursor=cursor,arraysize=250,table="PostLinks")
-
-        postlinks_queue.put(post_links)
         
-        if len(post_links) < BLOCK_DIM:
+        limited_ID_list = questionIDs[limit[0]:limit[1]]
+        
+        limited_ID_list = (str(limited_ID_list))[1:-1]
+
+        if limited_ID_list != "":
+            cursor.execute("SELECT * FROM PostLinks WHERE PostId IN ({})".format(limited_ID_list))
+            post_links = rev_fetch_all(cursor=cursor,arraysize=250,table="PostLinks")
+            postlinks_queue.put(post_links)
+        
+        if len(limited_ID_list.split(",")) < BLOCK_DIM:
             break
         else:
             limit[0]+=BLOCK_DIM
@@ -121,14 +146,19 @@ def main_func(proc_number,questions_queue,answers_queue,comments_queue,postlinks
         postlinks_queue.put("DONE{}".format(i))
     logger.write("\nPROCESS {} - has finished post links.\n".format(proc_number))
 
+    limit= [0,BLOCK_DIM]
     while True:
-        limit= [0,BLOCK_DIM]
-        cursor.execute("SELECT * FROM PostReferenceGH WHERE PostId IN ({}) LIMIT {},{}".format(questionIDs, limit[0],limit[1]))
-        post_GH = rev_fetch_all(cursor=cursor,arraysize=250,table="PostReferenceGH")
-
-        postreferGH_queue.put(post_GH)
         
-        if len(post_GH) < BLOCK_DIM:
+        limited_ID_list = questionIDs[limit[0]:limit[1]]
+        
+        limited_ID_list = (str(limited_ID_list))[1:-1]
+
+        if limited_ID_list != "":
+            cursor.execute("SELECT * FROM PostReferenceGH WHERE PostId IN ({})".format(limited_ID_list))
+            post_GH = rev_fetch_all(cursor=cursor,arraysize=250,table="PostReferenceGH")
+            postreferGH_queue.put(post_GH)
+        
+        if len(limited_ID_list.split(",")) < BLOCK_DIM:
             break
         else:
             limit[0]+=BLOCK_DIM

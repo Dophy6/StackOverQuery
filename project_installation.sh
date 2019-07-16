@@ -72,8 +72,7 @@ INTO TABLE PostReferenceGH
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 IGNORE 1 ROWS
-(FileId, Repo, RepoOwner, RepoName, Branch, Path, FileExt, Size, Copies, PostId, @CommentId, SOUrl, GHUrl)
-SET CommentId = nullif(@CommentId, '');
+(FileId, Repo, RepoOwner, RepoName, Branch, Path, FileExt, Size, Copies, PostId, @CommentId, SOUrl, GHUrl);
 ALTER TABLE Posts ADD INDEX (Date);
 ALTER TABLE Posts ADD INDEX (ParentId);
 ALTER TABLE PostLink ADD INDEX (PostId);
@@ -105,23 +104,28 @@ CREATE TABLE PostReferenceGH (Id INT(11) NOT NULL PRIMARY KEY, FileId VARCHAR(40
 LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/questions.csv\""
 INTO TABLE Questions
 FIELDS TERMINATED BY ','
-LINES TERMINATED BY '\n';
+LINES TERMINATED BY '\n'
+(Id, PostTypeId, AcceptedAnswerId, ParentId, CreationDate,DeletionDate, Score, ViewCount, Body, OwnerUserId, OwnerDisplayName, LastEditorUserId, LastEditorDisplayName, LastEditDate, LastActivityDate, Title, Tags, AnswerCount, CommentCount, FavoriteCount, ClosedDate, CommunityOwnedDate);
 LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/answers.csv\""
 INTO TABLE Answers
 FIELDS TERMINATED BY ','
-LINES TERMINATED BY '\n';
+LINES TERMINATED BY '\n'
+(Id, PostTypeId, AcceptedAnswerId, ParentId, CreationDate,DeletionDate, Score, ViewCount, Body, OwnerUserId, OwnerDisplayName, LastEditorUserId, LastEditorDisplayName, LastEditDate, LastActivityDate, Title, Tags, AnswerCount, CommentCount, FavoriteCount, ClosedDate, CommunityOwnedDate);
 LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/comments.csv\""
 INTO TABLE Comments
 FIELDS TERMINATED BY ','
-LINES TERMINATED BY '\n';
+LINES TERMINATED BY '\n'
+(Id, PostId, Score, Text, CreationDate, UserDisplayName, UserId);
 LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/postlinks.csv\""
 INTO TABLE PostLinks
 FIELDS TERMINATED BY ','
-LINES TERMINATED BY '\n';
+LINES TERMINATED BY '\n'
+(Id, CreationDate, PostId, RelatedPostId, LinkTypeId);
 LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/postreferGH.csv\""
 INTO TABLE PostReferenceGH
 FIELDS TERMINATED BY ','
-LINES TERMINATED BY '\n';
+LINES TERMINATED BY '\n'
+(FileId, Repo, RepoOwner, RepoName, Branch, Path, FileExt, Size, Copies, PostId, CommentId, SOUrl, GHUrl);
 ALTER TABLE Questions ADD FULLTEXT (Title);
 ALTER TABLE Answers ADD INDEX (ParentId);
 ALTER TABLE Answers ADD FULLTEXT (Body);
