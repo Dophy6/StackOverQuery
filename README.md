@@ -9,11 +9,11 @@ These instructions will get you a copy of the project up and running on your loc
 ### Hardware requirements
 
 At least you need of:
-	- Dual core processor(suggested);
-	- 350 GB of free space of which:
-		- 150 GB in your main partition;
-		- 200 GB wherever you want, also mounted from external drive;
-	- 8 GB of RAM(suggested);
+	* Dual core processor(suggested);
+	* 350 GB of free space of which:
+		* 150 GB in your main partition;
+		* 200 GB wherever you want, also mounted from external drive;
+	* 8 GB of RAM(suggested);
 
 ### Automatic project configuration
 
@@ -26,20 +26,21 @@ sh project_installation.sh
 It will ask you sudo password so it can install all dependences and download all datadump.
 Otherwise you can continue with the following guidelines.
 In both cases you have to enter your preferences in the configuration file(**config.json**), the fileds are:
-	- DOWNLOAD_PATH => the path of the directory where download and save all big files (except database), do not use back-slash at the end of the path;
-	- START_DATE => the date from which the questions will be taken on StackoverFlow;
-	- END_DATE => the date up to which the questions on StackoverFlow will be taken;
-	- READER_CORE_NUMBER => Number of processes to be allocated for reading the queues for the **database_maker_in_csv.py** script(at least 1, DEFAULT is meant as 25% of your processor cores number)
-	- WRITER_CORE_NUMBER => Number of processes to be allocated for writing the queues for the **database_maker_in_csv.py** script(at least 1, DEFAULT is meant as 75% of your processor cores number)
+	
+* DOWNLOAD_PATH => the path of the directory where download and save all big files (except database), do not use back-slash at the end of the path;
+* START_DATE => the date from which the questions will be taken on StackoverFlow;
+* END_DATE => the date up to which the questions on StackoverFlow will be taken;
+* READER_CORE_NUMBER => Number of processes to be allocated for reading the queues for the **database_maker_in_csv.py** script(at least 1, DEFAULT is meant as 25% of your processor cores number)
+* WRITER_CORE_NUMBER => Number of processes to be allocated for writing the queues for the **database_maker_in_csv.py** script(at least 1, DEFAULT is meant as 75% of your processor cores number)
 
 ### Prerequisites
 
 In order to use this application you need of:
 
-	-Python 3.x;
-	-pip3;
-	-Mysql;
-	-mysql.connect
+* Python 3.x;
+* pip3;
+* Mysql;
+* mysql.connect
 
 You can install them by pasting the following lines in your terminal:
 
