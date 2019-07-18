@@ -9,11 +9,11 @@ These instructions will get you a copy of the project up and running on your loc
 ### Hardware requirements
 
 At least you need of:
-	* Dual core processor(suggested);
-	* 350 GB of free space of which:
-		* 150 GB in your main partition;
-		* 200 GB wherever you want, also mounted from external drive;
-	* 8 GB of RAM(suggested);
+* Dual core processor(suggested);
+* 350 GB of free space of which:
+	- 150 GB in your main partition;
+	- 200 GB wherever you want, also mounted from external drive;
+* 8 GB of RAM(suggested);
 
 ### Automatic project configuration
 
