@@ -105,27 +105,27 @@ CREATE TABLE Answers (Id INT(11) NOT NULL PRIMARY KEY, PostTypeId TINYINT(4), Ac
 CREATE TABLE Comments (Id INT(11) NOT NULL PRIMARY KEY, PostId INT(11), Score INT(11), Text TEXT, CreationDate DATETIME, UserDisplayName VARCHAR(40), UserId INT(11));
 CREATE TABLE PostLinks (Id INT(11) NOT NULL PRIMARY KEY, CreationDate DATETIME, PostId INT(11), RelatedPostId INT(11), LinkTypeId TINYINT(4));
 CREATE TABLE PostReferenceGH (Id INT(11) NOT NULL PRIMARY KEY, FileId VARCHAR(40), Repo VARCHAR(255), RepoOwner VARCHAR(255), RepoName VARCHAR(255), Branch VARCHAR(255), Path TEXT, FileExt VARCHAR(255), Size INT(11), Copies INT(11), PostId INT(11), PostTypeId TINYINT(4), CommentId INT(11), SOUrl TEXT, GHUrl TEXT);
-LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/questions.csv\""
+LOAD DATA LOCAL INFILE "<your/path>/questions.csv"
 INTO TABLE Questions
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 (Id, PostTypeId, AcceptedAnswerId, ParentId, CreationDate,DeletionDate, Score, ViewCount, Body, OwnerUserId, OwnerDisplayName, LastEditorUserId, LastEditorDisplayName, LastEditDate, LastActivityDate, Title, Tags, AnswerCount, CommentCount, FavoriteCount, ClosedDate, CommunityOwnedDate);
-LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/answers.csv\""
+LOAD DATA LOCAL INFILE "<your/path>/answers.csv"
 INTO TABLE Answers
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 (Id, PostTypeId, AcceptedAnswerId, ParentId, CreationDate,DeletionDate, Score, ViewCount, Body, OwnerUserId, OwnerDisplayName, LastEditorUserId, LastEditorDisplayName, LastEditDate, LastActivityDate, Title, Tags, AnswerCount, CommentCount, FavoriteCount, ClosedDate, CommunityOwnedDate);
-LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/comments.csv\""
+LOAD DATA LOCAL INFILE "<your/path>/comments.csv"
 INTO TABLE Comments
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 (Id, PostId, Score, Text, CreationDate, UserDisplayName, UserId);
-LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/postlinks.csv\""
+LOAD DATA LOCAL INFILE "<your/path>/postlinks.csv"
 INTO TABLE PostLinks
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 (Id, CreationDate, PostId, RelatedPostId, LinkTypeId);
-LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/postreferGH.csv\""
+LOAD DATA LOCAL INFILE "<your/path>/postreferGH.csv"
 INTO TABLE PostReferenceGH
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
