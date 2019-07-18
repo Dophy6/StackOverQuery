@@ -17,7 +17,7 @@ At least you need of:
 
 ### Automatic project configuration
 
-First enter your preferences in the configuration file(**config.json**) then, if you want, you can just type in your terminal:
+First enter your preferences in the configuration file(*config.json*) then, if you want, you can just type in your terminal:
 
 ```
 sh project_installation.sh
@@ -25,7 +25,7 @@ sh project_installation.sh
 
 It will ask you sudo password so it can install all dependences and download all datadump.
 Otherwise you can continue with the following guidelines.
-In both cases you have to enter your preferences in the configuration file(**config.json**), the fileds are:
+In both cases you have to enter your preferences in the configuration file(*config.json*), the fileds are:
 	
 * DOWNLOAD_PATH => the path of the directory where download and save all big files (except database), do not use back-slash at the end of the path;
 * **START_DATE** => the date from which the questions will be taken on StackoverFlow;
@@ -94,7 +94,7 @@ ALTER TABLE Comments ADD INDEX (PostId);
 ALTER TABLE PostReferenceGH ADD INDEX (PostId);
 EOF
 ```
-Now you can delete previous extracted datadump(Posts.xml, PostReferenceGH.csv, PostLinks.xml, Comments.xml), write in **config.json** ```<your/path>``` in "DOWNLOAD_PATH" field and then start Python3 script called **database_maker_in_csv.py** that have no needs of input parameters(it could take some time). After script finished you can recreate database, now sliced for years, depending on how you set up the configuration file(fields START_DATE and END_DATE) by pasting these lines in your terminal:
+Now you can delete previous extracted datadump(Posts.xml, PostReferenceGH.csv, PostLinks.xml, Comments.xml), write in *config.json* ```<your/path>``` in "DOWNLOAD_PATH" field and then start Python3 script called *database_maker_in_csv.py* that have no needs of input parameters(it could take some time). After script finished you can recreate database, now sliced for years, depending on how you set up the configuration file(fields START_DATE and END_DATE) by pasting these lines in your terminal:
 
 ```
 mysql -u root -proot <<EOF
