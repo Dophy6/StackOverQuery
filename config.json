@@ -1,0 +1,12 @@
+{
+	"INSTALLATION":{
+		"DOWNLOAD_PATH" : "/home/mia/cartella/per/download"
+	},
+	"DB_MAKER":{
+		
+		"START_DATE" : "2014-01-01",
+		"END_DATE" : "2015-01-01",
+		"READER_CORE_NUMBER" : "DEFAULT",
+		"WRITER_CORE_NUMBER" : "DEFAULT"
+	}
+}
