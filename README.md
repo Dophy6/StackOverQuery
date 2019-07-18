@@ -44,7 +44,7 @@ In order to use this application you need of:
 
 You can install them by pasting the following lines in your terminal:
 
-```
+```sh
 sudo apt-get install python3
 yes | sudo apt install python3-pip
 pip3 install mysql-connector-python
@@ -56,7 +56,7 @@ sudo systemctl enable mysql.service
 
 First of all you need to download datadump with the following lines:
 
-```
+```sh
 sudo wget -O <your/path>/Posts.xml.7z "https://zenodo.org/record/2628274/files/Posts.xml.7z?download=1"
 sudo wget -O <your/path>/PostReferenceGH.csv.7z "https://zenodo.org/record/2628274/files/PostReferenceGH.csv.7z?download=1"
 sudo wget -O <your/path>/PostLinks.xml.7z "https://zenodo.org/record/2628274/files/PostLinks.xml.7z?download=1"
@@ -67,7 +67,7 @@ Then you can un-zipp them and delete the .7z old files.
 Before you can create the database, you need to set mysql **root** account with **root** password or simply change code blocks inside both .py scripts where credentials are required.
 Let's create the database(it could take some time) by pasting these lines in your terminal:
 
-```
+```sql
 mysql -u root -proot <<EOF
 CREATE DATABASE SistemiDistribuiti;
 USE SistemiDistribuiti;
@@ -96,7 +96,7 @@ EOF
 ```
 Now you can delete previous extracted datadump(Posts.xml, PostReferenceGH.csv, PostLinks.xml, Comments.xml), write in *config.json* ```<your/path>``` in "DOWNLOAD_PATH" field and then start Python3 script called *database_maker_in_csv.py* that have no needs of input parameters(it could take some time). After script finished you can recreate database, now sliced for years, depending on how you set up the configuration file(fields START_DATE and END_DATE) by pasting these lines in your terminal:
 
-```
+```sql
 mysql -u root -proot <<EOF
 USE SistemiDistribuiti;
 DROP TABLE [IF EXIST] [Posts], [Comments], [PostLinks], [PostReferenceGH];
