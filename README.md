@@ -27,7 +27,7 @@ It will ask you sudo password so it can install all dependences and download all
 Otherwise you can continue with the following guidelines.
 In both cases you have to enter your preferences in the configuration file(*config.json*), the fileds are:
 	
-* DOWNLOAD_PATH => the path of the directory where download and save all big files (except database), do not use back-slash at the end of the path;
+* **DOWNLOAD_PATH** => the path of the directory where download and save all big files (except database), do not use back-slash at the end of the path;
 * **START_DATE** => the date from which the questions will be taken on StackoverFlow(*yyyy-mm-dd*);
 * **END_DATE** => the date up to which the questions on StackoverFlow will be taken(*yyyy-mm-dd*);
 * **READER_CORE_NUMBER** => Number of processes to be allocated for reading the queues for the *database_maker_in_csv.py* script(at least 1, DEFAULT is meant as 25% of your processor cores number)
