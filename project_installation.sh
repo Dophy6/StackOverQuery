@@ -1,5 +1,5 @@
 #!/bin/bash
-: '
+
 echo "Install requirements"
 
 sudo apt update
@@ -27,30 +27,30 @@ sudo apt-get install python3
 yes | sudo apt install python3-pip
 pip3 install mysql-connector-python
 #pip install multiprocessing
-'
+
 DOWNLOAD_PATH=$(jq -r '.INSTALLATION.DOWNLOAD_PATH' config.json) 
 echo "Download path is: "$DOWNLOAD_PATH
 # Downloading dump
 
 echo "Start to download Posts.xml.7z"
-#sudo wget -O $DOWNLOAD_PATH"/Posts.xml.7z" "https://zenodo.org/record/2628274/files/Posts.xml.7z?download=1"
+sudo wget -O $DOWNLOAD_PATH"/Posts.xml.7z" "https://zenodo.org/record/2628274/files/Posts.xml.7z?download=1"
 echo "Start to download PostReferenceGH.csv.7z"
-#sudo wget -O $DOWNLOAD_PATH"/PostReferenceGH.csv.7z" "https://zenodo.org/record/2628274/files/PostReferenceGH.csv.7z?download=1"
+sudo wget -O $DOWNLOAD_PATH"/PostReferenceGH.csv.7z" "https://zenodo.org/record/2628274/files/PostReferenceGH.csv.7z?download=1"
 echo "Start to download PostLinks.xml.7z"
-#sudo wget -O $DOWNLOAD_PATH"/PostLinks.xml.7z" "https://zenodo.org/record/2628274/files/PostLinks.xml.7z?download=1"
+sudo wget -O $DOWNLOAD_PATH"/PostLinks.xml.7z" "https://zenodo.org/record/2628274/files/PostLinks.xml.7z?download=1"
 echo "Start to download Comments.xml.7z"
-#sudo wget -O $DOWNLOAD_PATH"/Comments.xml.7z" "https://zenodo.org/record/2628274/files/Comments.xml.7z?download=1"
+sudo wget -O $DOWNLOAD_PATH"/Comments.xml.7z" "https://zenodo.org/record/2628274/files/Comments.xml.7z?download=1"
 
 echo "Un-zipping and deleting dump.7z"
 
-#7za e $DOWNLOAD_PATH"/Posts.xml.7z" -o$DOWNLOAD_PATH
-#sudo rm $DOWNLOAD_PATH"/Posts.xml.7z"
-#7za e $DOWNLOAD_PATH"/PostReferenceGH.csv.7z" -o$DOWNLOAD_PATH
-#sudo rm $DOWNLOAD_PATH"/PostReferenceGH.csv.7z"
-#7za e $DOWNLOAD_PATH"/PostLinks.xml.7z" -o$DOWNLOAD_PATH
-#sudo rm $DOWNLOAD_PATH"/PostLinks.xml.7z"
-#7za e $DOWNLOAD_PATH"/Comments.xml.7z" -o$DOWNLOAD_PATH
-#sudo rm $DOWNLOAD_PATH"/Comments.xml.7z"
+7za e $DOWNLOAD_PATH"/Posts.xml.7z" -o$DOWNLOAD_PATH
+sudo rm $DOWNLOAD_PATH"/Posts.xml.7z"
+7za e $DOWNLOAD_PATH"/PostReferenceGH.csv.7z" -o$DOWNLOAD_PATH
+sudo rm $DOWNLOAD_PATH"/PostReferenceGH.csv.7z"
+7za e $DOWNLOAD_PATH"/PostLinks.xml.7z" -o$DOWNLOAD_PATH
+sudo rm $DOWNLOAD_PATH"/PostLinks.xml.7z"
+7za e $DOWNLOAD_PATH"/Comments.xml.7z" -o$DOWNLOAD_PATH
+sudo rm $DOWNLOAD_PATH"/Comments.xml.7z"
 
 echo "Creating database and importing data"
 
@@ -80,17 +80,17 @@ ALTER TABLE Comments ADD INDEX (PostId);
 ALTER TABLE PostReferenceGH ADD INDEX (PostId);
 EOF
 
-#echo "Deleting dump files"
+echo "Deleting dump files"
 
-#rm $DOWNLOAD_PATH"/Posts.xml"
-#rm $DOWNLOAD_PATH"/PostReferenceGH.csv"
-#rm $DOWNLOAD_PATH"/PostLinks.xml"
-#rm $DOWNLOAD_PATH"/Comments.xml"
+rm $DOWNLOAD_PATH"/Posts.xml"
+rm $DOWNLOAD_PATH"/PostReferenceGH.csv"
+rm $DOWNLOAD_PATH"/PostLinks.xml"
+rm $DOWNLOAD_PATH"/Comments.xml"
 
 echo "Start script to build sliced db in csv"
 
 python3 database_maker_in_csv.py
-: '
+
 echo "Recreate database from csv"
 
 mysql -u root -proot <<EOF
@@ -134,4 +134,3 @@ ALTER TABLE Comments ADD INDEX (PostId);
 ALTER TABLE Comments ADD FULLTEXT (Text);
 ALTER TABLE PostReferenceGH ADD INDEX (PostId);
 EOF
-'
