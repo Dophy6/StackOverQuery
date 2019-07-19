@@ -1,4 +1,4 @@
-# Distributed systems project
+# StackOverQuery
 
 This project developed for Linux based sytems, provides a tool capable of performing research on a StackoverFlow datadump relating it to a GitHub datadump bidirectionally.
 
