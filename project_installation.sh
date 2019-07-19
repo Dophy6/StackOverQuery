@@ -13,24 +13,13 @@ echo "mysql-server mysql-server/root_password password root" | sudo debconf-set-
 echo "mysql-server mysql-server/root_password_again password root" | sudo debconf-set-selections
 sudo apt-get install -y mysql-server
 
-#mysql_secure_installation
-
-
-#sudo mysql <<EOF
-#ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'progetto_distribuiti19';
-#FLUSH PRIVILEGES;
-#exit;
-#EOF
-
 sudo systemctl enable mysql.service
 sudo apt-get install python3
 yes | sudo apt install python3-pip
 pip3 install mysql-connector-python
-#pip install multiprocessing
 
 DOWNLOAD_PATH=$(jq -r '.INSTALLATION.DOWNLOAD_PATH' config.json) 
 echo "Download path is: "$DOWNLOAD_PATH
-# Downloading dump
 
 echo "Start to download Posts.xml.7z"
 sudo wget -O $DOWNLOAD_PATH"/Posts.xml.7z" "https://zenodo.org/record/2628274/files/Posts.xml.7z?download=1"
@@ -61,13 +50,13 @@ CREATE TABLE Posts (Id INT(11) NOT NULL PRIMARY KEY, PostTypeId TINYINT(4), Acce
 CREATE TABLE Comments (Id INT(11) NOT NULL PRIMARY KEY, PostId INT(11), Score INT(11), Text TEXT, CreationDate DATETIME, UserDisplayName VARCHAR(40), UserId INT(11));
 CREATE TABLE PostLinks (Id INT(11) NOT NULL PRIMARY KEY, CreationDate DATETIME, PostId INT(11), RelatedPostId INT(11), LinkTypeId TINYINT(4));
 CREATE TABLE PostReferenceGH (Id INT(11) NOT NULL PRIMARY KEY, FileId VARCHAR(40), Repo VARCHAR(255), RepoOwner VARCHAR(255), RepoName VARCHAR(255), Branch VARCHAR(255), Path TEXT, FileExt VARCHAR(255), Size INT(11), Copies INT(11), PostId INT(11), PostTypeId TINYINT(4), CommentId INT(11), SOUrl TEXT, GHUrl TEXT);
-LOAD XML LOCAL INFILE "\"$DOWNLOAD_PATH/Comments.xml\""
+LOAD XML LOCAL INFILE '$DOWNLOAD_PATH/Comments.xml'
 INTO TABLE Comments(Id, PostId, Score, Text, CreationDate, UserDisplayName, UserId);
-LOAD XML LOCAL INFILE "\"$DOWNLOAD_PATH/Posts.xml\""
+LOAD XML LOCAL INFILE '$DOWNLOAD_PATH/Posts.xml'
 INTO TABLE Posts(Id, PostTypeId, AcceptedAnswerId, ParentId, CreationDate,DeletionDate, Score, ViewCount, Body, OwnerUserId, OwnerDisplayName, LastEditorUserId, LastEditorDisplayName, LastEditDate, LastActivityDate, Title, Tags, AnswerCount, CommentCount, FavoriteCount, ClosedDate, CommunityOwnedDate);
-LOAD XML LOCAL INFILE "\"$DOWNLOAD_PATH/PostLinks.xml\""
+LOAD XML LOCAL INFILE '$DOWNLOAD_PATH/PostLinks.xml'
 INTO TABLE PostLinks(Id, CreationDate, PostId, RelatedPostId, LinkTypeId);
-LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/PostReferenceGH.csv\""
+LOAD DATA LOCAL INFILE '$DOWNLOAD_PATH/PostReferenceGH.csv'
 INTO TABLE PostReferenceGH
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
@@ -101,27 +90,27 @@ CREATE TABLE Answers (Id INT(11) NOT NULL PRIMARY KEY, PostTypeId TINYINT(4), Ac
 CREATE TABLE Comments (Id INT(11) NOT NULL PRIMARY KEY, PostId INT(11), Score INT(11), Text TEXT, CreationDate DATETIME, UserDisplayName VARCHAR(40), UserId INT(11));
 CREATE TABLE PostLinks (Id INT(11) NOT NULL PRIMARY KEY, CreationDate DATETIME, PostId INT(11), RelatedPostId INT(11), LinkTypeId TINYINT(4));
 CREATE TABLE PostReferenceGH (Id INT(11) NOT NULL PRIMARY KEY, FileId VARCHAR(40), Repo VARCHAR(255), RepoOwner VARCHAR(255), RepoName VARCHAR(255), Branch VARCHAR(255), Path TEXT, FileExt VARCHAR(255), Size INT(11), Copies INT(11), PostId INT(11), PostTypeId TINYINT(4), CommentId INT(11), SOUrl TEXT, GHUrl TEXT);
-LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/questions.csv\""
+LOAD DATA LOCAL INFILE '$DOWNLOAD_PATH/questions.csv'
 INTO TABLE Questions
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 (Id, PostTypeId, AcceptedAnswerId, ParentId, CreationDate,DeletionDate, Score, ViewCount, Body, OwnerUserId, OwnerDisplayName, LastEditorUserId, LastEditorDisplayName, LastEditDate, LastActivityDate, Title, Tags, AnswerCount, CommentCount, FavoriteCount, ClosedDate, CommunityOwnedDate);
-LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/answers.csv\""
+LOAD DATA LOCAL INFILE '$DOWNLOAD_PATH/answers.csv'
 INTO TABLE Answers
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 (Id, PostTypeId, AcceptedAnswerId, ParentId, CreationDate,DeletionDate, Score, ViewCount, Body, OwnerUserId, OwnerDisplayName, LastEditorUserId, LastEditorDisplayName, LastEditDate, LastActivityDate, Title, Tags, AnswerCount, CommentCount, FavoriteCount, ClosedDate, CommunityOwnedDate);
-LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/comments.csv\""
+LOAD DATA LOCAL INFILE '$DOWNLOAD_PATH/comments.csv'
 INTO TABLE Comments
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 (Id, PostId, Score, Text, CreationDate, UserDisplayName, UserId);
-LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/postlinks.csv\""
+LOAD DATA LOCAL INFILE '$DOWNLOAD_PATH/postlinks.csv'
 INTO TABLE PostLinks
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
 (Id, CreationDate, PostId, RelatedPostId, LinkTypeId);
-LOAD DATA LOCAL INFILE "\"$DOWNLOAD_PATH/postreferGH.csv\""
+LOAD DATA LOCAL INFILE '$DOWNLOAD_PATH/postreferGH.csv'
 INTO TABLE PostReferenceGH
 FIELDS TERMINATED BY ','
 LINES TERMINATED BY '\n'
